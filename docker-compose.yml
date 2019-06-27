@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+  django:
+    container_name: ${WEB_NAME}
+    hostname: ${WEB_NAME}
+    restart: always
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./src:/code
+    ports:
+      - "${WEB_PORT}:8000"
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      cards-net:
+
+  db:
+    container_name: ${DB_NAME}
+    hostname: ${DB_NAME}
+    restart: always
+    image: mariadb:10.2
+
+    env_file:
+      - .env
+
+    environment:
+      MYSQL_ROOT_PASSWORD:  ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      cards-net:
+    command: mysqld --innodb-flush-method=fsync
+
+
+networks:
+  cards-net:
+    driver: bridge
+    name: cards-net

@@ -1,12 +1,7 @@
-FROM python:3
-
-WORKDIR /usr/src/app
-
-COPY requirements.txt ./
+FROM python:3.6
+ENV PYTHONUNBUFFERED 1
+RUN mkdir /code
+WORKDIR /code
+COPY requirements.txt /code
 RUN pip install --no-cache-dir -r requirements.txt
-
-COPY ./src .
-EXPOSE 8000
-
-CMD sh -c "python manage.py migrate; python manage.py runserver 0.0.0.0:8000;"
 
