@@ -18,14 +18,14 @@ class Status(models.Model):
     uuid = models.CharField(
         # 123e4567-e89b-12d3-a456-426655440000
         verbose_name=_('uuid'),
-        max_length=256,
+        max_length=255,
         unique=True,
         null=False, blank=False,
     )
 
     name = models.CharField(
         verbose_name=_('Name'),
-        max_length=256,
+        max_length=255,
         null=True, blank=True,
     )
 
@@ -46,7 +46,7 @@ class Card(models.Model):
 
     uuid = models.CharField(
         verbose_name=_('uuid'),
-        max_length=256,
+        max_length=255,
         unique=True,
         null=False, blank=False,
     )
@@ -62,7 +62,7 @@ class Card(models.Model):
     type = models.CharField(
         verbose_name=_('Type'),
         choices=TYPE_CHOICES,
-        max_length=256,
+        max_length=255,
         null=False, blank=False,
     )
 
@@ -84,7 +84,7 @@ class Card(models.Model):
     source = models.CharField(
         verbose_name=_('Source'),
         choices=SOURCE_CHOICES,
-        max_length=256,
+        max_length=255,
         null=False, blank=False,
     )
 
@@ -108,12 +108,12 @@ class Card(models.Model):
 
     event_uuid = models.CharField(
         verbose_name=_('Event uuid'),
-        max_length=256,
+        max_length=255,
         null=True, blank=True,
     )
     place_uuid = models.CharField(
         verbose_name=_('Place uuid'),
-        max_length=256,
+        max_length=255,
         null=True, blank=True,
     )
 
@@ -156,7 +156,7 @@ class StatusChange(models.Model):
     system = models.CharField(                      # источник изменения статуса
         verbose_name=_('System'),
         choices=SYSTEM_CHOICES,
-        max_length=256,
+        max_length=255,
         null=False, blank=False,
     )
 
