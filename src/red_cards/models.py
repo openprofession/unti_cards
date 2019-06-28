@@ -8,6 +8,8 @@ https://openprofessions.atlassian.net/browse/DEVUNTI-2
 """
 User = get_user_model()
 
+# from rest_framework_api_key.models import AbstractAPIKey
+
 
 class Status(models.Model):
     class Meta:

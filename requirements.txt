@@ -3,4 +3,3 @@ mysqlclient==1.4.2.post1
 djangorestframework==3.9.4
 coreapi==2.3.3
 django-filter==2.1.0
-djangorestframework-api-key==1.2.1
