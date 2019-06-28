@@ -48,6 +48,28 @@ class CardViewSet(viewsets.ModelViewSet):
     # filter_backends = (DjangoFilterBackend,)
     filter_class = ListingFilter
 
+    @staticmethod
+    def _add_status(item):
+        status = models.Status.objects.filter(
+            card_id=item['id']
+        ).filter(
+            is_public=True
+        ).order_by('-change_dt').first()
+
+        item['status'] = {
+            'name': 'undefined',
+        }
+
+        if status:
+            item['status'].update({
+                'name': status.name,
+                'date': status.change_dt.strftime(
+                    settings.REST_FRAMEWORK['DATETIME_FORMAT']
+                ),
+                # 'system':       status.system,
+            })
+        #
+
     def list(self, request, *args, **kwargs):
         """
             Return a list of all feeds.
@@ -55,25 +77,7 @@ class CardViewSet(viewsets.ModelViewSet):
         response = super(CardViewSet, self).list(request, *args, **kwargs)
         data = response.data
         for item in data:
-            status = models.Status.objects.filter(
-                card_id=item['id']
-            ).filter(
-                is_public=True
-            ).order_by('-change_dt').first()
-
-            item['status'] = {
-                'name':     'undefined',
-            }
-
-            if status:
-                item['status'].update({
-                    'name':         status.name,
-                    'date':         status.change_dt.strftime(
-                        settings.REST_FRAMEWORK['DATETIME_FORMAT']
-                    ),
-                    # 'system':       status.system,
-                })
-            #
+            self._add_status(item)
         #
         return Response(data)
 
@@ -82,5 +86,7 @@ class CardViewSet(viewsets.ModelViewSet):
             Return a single item
         """
         response = super(CardViewSet, self).retrieve(request, *args, **kwargs)
-        return Response(response.data)
+        data = response.data
+        self._add_status(data)
+        return Response(data)
 
