@@ -15,14 +15,14 @@ class ListingFilter(django_filters.FilterSet):
         model = Card
         fields = (
             'uuid',
-            'user',             # идентификатор пользователя
+            'leader_id',        # идентификатор пользователя
             'event_uuid',       # идентификатор мероприятия
             'type',             # тип карточки
-            'status',           # статус карточки
             'start_time',       # start_time (начало промежутка времени изменения последнего статуса карточки)
             'end_time',         # end_time (конец промежутка времени последнего изменения статуса)
 
         )
+    #
 
     start_time = django_filters.DateTimeFilter(method='_last_status_min')
     end_time = django_filters.DateTimeFilter(method='_last_status_max')

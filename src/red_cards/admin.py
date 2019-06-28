@@ -10,36 +10,43 @@ def reg_admin_model(model):
     return _proxy
 
 
-@reg_admin_model(models.Status)
-class StatusAdmin(admin.ModelAdmin):
-    list_display = (
-        'uuid',
-        'name',
-        # 'description',
-    )
-
-
 @reg_admin_model(models.Card)
 class CardAdmin(admin.ModelAdmin):
     list_display = (
         'uuid',
+        '_status',
         'type',
         'reason',
         'source',
-        'user',
+        'leader_id',
         'incident_dt',
         'event_uuid',
         'place_uuid',
     )
 
+    def _status(self, obj):
+        assert isinstance(obj, models.Card)
+        status = models.Status.objects.filter(
+            card=obj
+        ).order_by(
+            '-change_dt',
+        ).first()
+        if status:
+            status = status.name
+        else:
+            status = 'not set'
+        #
+        return status
+    #
+    _status.short_description = 'status'
 
-@reg_admin_model(models.StatusChange)
-class StatusChangeAdmin(admin.ModelAdmin):
+
+@reg_admin_model(models.Status)
+class StatusAdmin(admin.ModelAdmin):
     list_display = (
         'card',
-        'status',
         'change_dt',
         'system',
-        'user',
+        # 'leader_id',
+        'name',
     )
-
