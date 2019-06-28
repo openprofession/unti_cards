@@ -90,6 +90,15 @@ class Card(models.Model):
     def __str__(self):
         return '{}'.format(self.uuid)
 
+    def save(self, *args, **kwargs):
+        super(Card, self).save(*args, **kwargs)
+        Status.objects.create(
+            card=self,
+            system=Status.SYSTEM_CARDS,
+            name=Status.NAME_INITIATED,
+            is_public=True,
+        )
+
 
 class Status(models.Model):
     class Meta:
@@ -107,6 +116,7 @@ class Status(models.Model):
     change_dt = models.DateTimeField(               # время изменения статуса
         verbose_name=_('Date change'),
         null=False, blank=False,
+        auto_now_add=True,
     )
 
     SYSTEM_CARDS = 'cards'
@@ -157,6 +167,11 @@ class Status(models.Model):
     #     verbose_name=_('Description'),
     #     null=True, blank=True,
     # )
+
+    is_public = models.BooleanField(
+        verbose_name=_('is public'),
+        default=False,
+    )
 
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)

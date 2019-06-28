@@ -81,6 +81,7 @@ REST_FRAMEWORK = {
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework_api_key.permissions.HasAPIKey",
     # ]
+    'DATETIME_FORMAT': "%Y-%m-%d %H:%M",  # YYYY-MM-DD hh:mm
 }
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
