@@ -140,3 +140,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+# https://docs.djangoproject.com/en/2.2/ref/settings/#datetime-input-formats
+# from django.conf.global_settings import DATETIME_INPUT_FORMATS
+
