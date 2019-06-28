@@ -1,17 +1,13 @@
+# coding: utf-8
+import django_filters
+
 from rest_framework import viewsets
 
 from red_cards.models import Card
 from red_cards.serializers import CardSerializer
 
-from django_filters.rest_framework import DjangoFilterBackend
-import django_filters
-
-
-# https://stackoverflow.com/questions/24414926/using-custom-methods-in-filter-with-django-rest-framework
-# https://stackoverflow.com/questions/37183943/django-how-to-filter-by-date-with-django-rest-framework
-# https://stackoverflow.com/questions/11508744/django-models-filter-by-foreignkey
-def last_status_lte(queryset, value, *args, **kwargs):
-    return queryset.filter(statuschange__change_dt__lte=value)
+from rest_framework_api_key.permissions import HasAPIKey
+# from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ListingFilter(django_filters.FilterSet):
@@ -30,9 +26,11 @@ class ListingFilter(django_filters.FilterSet):
 
     start_time = django_filters.DateTimeFilter(method='_last_status_min')
     end_time = django_filters.DateTimeFilter(method='_last_status_max')
-    # last_status_max = django_filters.DateTimeFilter(field_name="statuschange__change_dt", lookup_type='lte')
 
     def _last_status_min(self, queryset, field_name, value):
+        # https://stackoverflow.com/questions/24414926/using-custom-methods-in-filter-with-django-rest-framework
+        # https://stackoverflow.com/questions/37183943/django-how-to-filter-by-date-with-django-rest-framework
+        # https://stackoverflow.com/questions/11508744/django-models-filter-by-foreignkey
         return queryset.filter(statuschange__change_dt__gte=value)
 
     def _last_status_max(self, queryset, field_name, value):
@@ -40,6 +38,8 @@ class ListingFilter(django_filters.FilterSet):
 
 
 class CardViewSet(viewsets.ModelViewSet):
+    permission_classes = (HasAPIKey, )
+
     queryset = Card.objects.all()
     serializer_class = CardSerializer
     # filter_backends = (DjangoFilterBackend,)

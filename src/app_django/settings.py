@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
+    'rest_framework_api_key',
     'red_cards',
 ]
 
@@ -73,9 +74,14 @@ WSGI_APPLICATION = 'app_django.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
-    )
+    ),
+    # https://florimondmanca.github.io/djangorestframework-api-key/guide/
+    # https://florimondmanca.github.io/djangorestframework-api-key/guide/#setting-permissions
+    # https://www.django-rest-framework.org/api-guide/permissions/
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework_api_key.permissions.HasAPIKey",
+    # ]
 }
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
