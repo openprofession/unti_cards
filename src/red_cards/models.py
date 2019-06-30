@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import get_user_model
-
+import uuid
 """
 https://openprofessions.atlassian.net/browse/DEVUNTI-2
 
@@ -17,11 +16,16 @@ class Card(models.Model):
         verbose_name_plural = _('Cards')
     #
 
-    uuid = models.IntegerField(                     # идентификатор карточки в системе, integer
+    uuid = models.UUIDField(
+        # идентификатор карточки в системе, integer
+        # UUID карточки мы генерируем сами
         verbose_name=_('uuid'),
-        max_length=255,
+        # max_length=255,
+        primary_key=True,
         unique=True,
         null=False, blank=False,
+        editable=False,
+        default=uuid.uuid4,
     )
 
     TYPE_RED = 'red'
@@ -65,7 +69,7 @@ class Card(models.Model):
 
     leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
         verbose_name=_('Leader'),                   # кому выдана карточка
-        max_length=255,
+        # max_length=255,
         unique=True,
         null=False, blank=False,
     )
