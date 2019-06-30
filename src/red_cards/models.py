@@ -70,7 +70,6 @@ class Card(models.Model):
     leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
         verbose_name=_('Leader'),                   # кому выдана карточка
         # max_length=255,
-        unique=True,
         null=False, blank=False,
     )
 
@@ -137,13 +136,6 @@ class Status(models.Model):
         max_length=255,
         null=False, blank=False,
     )
-
-    # leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
-    #     verbose_name=_('Leader'),                   # кому выдана карточка
-    #     max_length=255,
-    #     unique=True,
-    #     null=False, blank=False,
-    # )
 
     # статус карточки, string,  допустимые значения:
     # [“initiated”, “published”, “consideration”, “issued”, “eliminated”]
