@@ -41,12 +41,12 @@ class CardAdmin(admin.ModelAdmin):
     _status.short_description = 'status'
 
 
-# @reg_admin_model(models.Status)
-# class StatusAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'card',
-#         'change_dt',
-#         'system',
-#         # 'leader_id',
-#         'name',
-#     )
+@reg_admin_model(models.Status)
+class StatusAdmin(admin.ModelAdmin):
+    list_display = (
+        'card',
+        'change_dt',
+        'system',
+        # 'leader_id',
+        'name',
+    )
