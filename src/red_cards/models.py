@@ -196,6 +196,7 @@ class Status(models.Model):
         if self.name in self.PRIVATE_STATUSES:
             self.is_public = False
         #
+        super(Status, self).save(*args, **kwargs)
 
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
