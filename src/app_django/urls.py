@@ -27,6 +27,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api-docs/', include_docs_urls(title='DRF: API-docs')),
     path('api/', include(router.urls)),
+    path('', include('social_django.urls', namespace='social')),
     path('', views.home),
     *staticfiles_urlpatterns(),
 ]

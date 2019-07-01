@@ -8,7 +8,19 @@
                 <div class="event-window">
                     <img class="img" src="/static/img/logo.svg" alt="" style="width: 35%">
 
-                    <div class="event-window__button"><a class="btn btn-danger btn-lg" href="#">Войти</a></div>
+                    <div class="event-window__button">
+{#                        <a class="btn btn-danger btn-lg" href="#">Войти</a>#}
+                        {% comment %}
+<a href="{% url 'social:begin' 'facebook' %}?next={{ request.path }}">Login with Facebook</a>
+<a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}">Login with Google</a>
+<a class="nav-link navbar-red" href="{% url 'social:begin' backend='unti' %}?next={{ request.path }}">
+{% endcomment %}
+<a class="btn btn-danger btn-lg"
+   href="{% url 'social:begin' backend='unti' %}?next=http://redcards.ap8.ru">
+    Войти
+</a>
+
+                    </div>
                 </div>
             </div>
         </section>
