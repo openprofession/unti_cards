@@ -20,6 +20,7 @@ class Card(models.Model):
         # идентификатор карточки в системе, integer
         # UUID карточки мы генерируем сами
         verbose_name=_('uuid'),
+        help_text=_('идентификатор карточки в системе, string'),
         # max_length=255,
         primary_key=True,
         unique=True,
@@ -38,6 +39,7 @@ class Card(models.Model):
     )
     type = models.CharField(        # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
         verbose_name=_('Type'),
+        help_text=_('тип карточки, string, допустимые значения: [“red”, “yellow”, “green”]'),
         choices=TYPE_CHOICES,
         max_length=255,
         null=False, blank=False,
@@ -45,6 +47,7 @@ class Card(models.Model):
 
     reason = models.TextField(      # причина выдачи карточки, string
         verbose_name=_('Reason'),
+        help_text=_('причина выдачи карточки, string'),
         max_length=512,
         null=False, blank=False,
 
@@ -62,6 +65,8 @@ class Card(models.Model):
     )
     source = models.CharField(
         verbose_name=_('Source'),
+        help_text=_('источник выдачи карточки, string, допустимые значения '
+                    '[“Cards”, “Leader”, “Experiments”]'),
         choices=SOURCE_CHOICES,
         max_length=255,
         null=False, blank=False,
@@ -69,6 +74,7 @@ class Card(models.Model):
 
     leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
         verbose_name=_('Leader'),                   # кому выдана карточка
+        help_text=_('идентификатор пользователя в Leader Id, integer'),
         # max_length=255,
         null=False, blank=False,
     )
@@ -76,16 +82,18 @@ class Card(models.Model):
     # incident_dt - время нарушения, дата в формате “YYYY-MM-DD hh:mm”
     incident_dt = models.DateTimeField(
         verbose_name=_('Incident date'),
+        help_text=_('время нарушения, string, дата в формате “YYYY-MM-DD hh:mm”'),
         null=False, blank=False,
     )
 
     event_uuid = models.CharField(                  # идентификатор мероприятия из Labs, string
         verbose_name=_('Event uuid'),
+        help_text=_('идентификатор мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
     )
     place_uuid = models.CharField(                  # идентификатор места проведения мероприятия из Labs, string
-        verbose_name=_('Place uuid'),
+        verbose_name=_('идентификатор места проведения мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
     )

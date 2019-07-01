@@ -2,18 +2,20 @@
 import django_filters
 
 from rest_framework import viewsets
+from rest_framework import mixins
 
 from red_cards.models import Card
 from red_cards.serializers import CardSerializer
 
 from rest_framework_api_key.permissions import HasAPIKey
+from django.utils.translation import ugettext_lazy as _
 
 
 class ListingFilter(django_filters.FilterSet):
     class Meta:
         model = Card
         fields = (
-            # 'uuid',
+            'uuid',
             'leader_id',        # идентификатор пользователя
             'event_uuid',       # идентификатор мероприятия
             'type',             # тип карточки
@@ -23,8 +25,22 @@ class ListingFilter(django_filters.FilterSet):
         )
     #
 
-    start_time = django_filters.DateTimeFilter(method='_last_status_min')
-    end_time = django_filters.DateTimeFilter(method='_last_status_max')
+    # @classmethod
+    # def filter_for_field(cls, field, field_name, lookup_expr='exact'):
+    #     filter = super(ListingFilter, cls).filter_for_field(field, field_name, lookup_expr)
+    #     filter.extra['help_text'] = field.help_text
+    #     return filter
+
+    start_time = django_filters.DateTimeFilter(
+        method='_last_status_min',
+        help_text=_('начало промежутка времени, string, дата в формате '
+                    '“YYYY-MM-DD hh:mm”'),
+    )
+    end_time = django_filters.DateTimeFilter(
+        method='_last_status_max',
+        help_text=_('конец промежутка времени, string, дата в формате '
+                    '“YYYY-MM-DD hh:mm”'),
+    )
 
     def _last_status_min(self, queryset, field_name, value):
         # https://stackoverflow.com/questions/24414926/using-custom-methods-in-filter-with-django-rest-framework
@@ -36,7 +52,14 @@ class ListingFilter(django_filters.FilterSet):
         return queryset.filter(status__change_dt__lte=value)
 
 
-class CardViewSet(viewsets.ModelViewSet):
+class CardViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+        Карточки
+    """
     permission_classes = (HasAPIKey, )
 
     queryset = Card.objects.all()

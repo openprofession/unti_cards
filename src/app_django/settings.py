@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_core',
+    'social_django',
     'django_filters',
     'rest_framework',
     'rest_framework_api_key',
@@ -49,7 +51,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'app_django.middleware.CustomSocialAuthMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'app_django.auth.UNTIBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 ROOT_URLCONF = 'app_django.urls'
 

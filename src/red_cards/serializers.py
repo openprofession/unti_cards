@@ -2,12 +2,10 @@ from rest_framework import serializers
 from django.conf import settings
 from . import models
 from red_cards.models import Card
+from django.utils.translation import ugettext_lazy as _
 
 
 class CardSerializer(serializers.ModelSerializer):
-    """
-        Карточки (красная, желтая, зеленая)
-    """
     class Meta:
         model = Card
         # fields = '__all__'
@@ -17,7 +15,7 @@ class CardSerializer(serializers.ModelSerializer):
             'type',             #
             'reason',           #
             'source',           #
-            'user',             #
+            'leader_id',        #
             'incident_dt',
             'event_uuid',
             'place_uuid',
@@ -28,11 +26,11 @@ class CardSerializer(serializers.ModelSerializer):
             'status',
         )
     #
-    # https://stackoverflow.com/questions/18396547/django-rest-framework-adding-additional-field-to-modelserializer
-    user = serializers.IntegerField(source='leader_id')
-
     status = serializers.SerializerMethodField(
-        source='get_status'
+        source='get_status',
+        help_text=_('статус карточки, string, допустимые значения: '
+                    '[“initiated”, “published”, “consideration”, “issued”, '
+                    '“eliminated”]'),
     )
 
     def get_status(self, obj):
