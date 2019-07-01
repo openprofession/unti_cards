@@ -193,8 +193,7 @@ class Status(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        if self.name in self.PRIVATE_STATUSES:
-            self.is_public = False
+        self.is_public = self.name not in self.PRIVATE_STATUSES
         #
         super(Status, self).save(*args, **kwargs)
 

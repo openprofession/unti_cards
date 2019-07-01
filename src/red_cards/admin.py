@@ -49,7 +49,12 @@ class StatusAdmin(admin.ModelAdmin):
         'system',
         # 'leader_id',
         'name',
+        'is_public',
     )
+    readonly_fields = (
+        'is_public',
+    )
+
     def has_change_permission(self, request, obj=None):
         return False
 
