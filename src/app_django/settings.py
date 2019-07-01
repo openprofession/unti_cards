@@ -56,7 +56,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'app_django.auth.UNTIBackend',
+    #"'app_django.auth.UNTIBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
