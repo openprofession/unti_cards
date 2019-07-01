@@ -153,12 +153,27 @@ class Status(models.Model):
     NAME_CONSIDERATION = "consideration"
     NAME_ISSUED = "issued"
     NAME_ELIMINATED = "eliminated"
+
+    NAME_APPROVED = "approved"
+    NAME_REJECTED = "rejected"
+    NAME_RECOMMENDED = "recommended"
+
+    PRIVATE_STATUSES = (
+        NAME_APPROVED,
+        NAME_REJECTED,
+        NAME_RECOMMENDED,
+    )
+
     NAME_CHOICES = (
         (NAME_INITIATED,        _("Initiated")),
         (NAME_PUBLISHED,        _("Published")),
         (NAME_CONSIDERATION,    _("Consideration")),
         (NAME_ISSUED,           _("Issued")),
         (NAME_ELIMINATED,       _("Eliminated")),
+
+        (NAME_APPROVED,         _("Approved")),
+        (NAME_REJECTED,         _("Rejected")),
+        (NAME_RECOMMENDED,      _("Recommended")),
     )
     name = models.CharField(
         verbose_name=_('Name'),
@@ -176,6 +191,11 @@ class Status(models.Model):
         verbose_name=_('is public'),
         default=False,
     )
+
+    def save(self, *args, **kwargs):
+        if self.name in self.PRIVATE_STATUSES:
+            self.is_public = False
+        #
 
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
