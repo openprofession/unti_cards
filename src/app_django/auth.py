@@ -15,7 +15,7 @@ def update_user(strategy, details, user=None, backend=None, *args, **kwargs):
         # tags = data.get('tags') or []
         # user.is_assistant = any(i in tags for i in settings.ASSISTANT_TAGS_NAME)
         # user.unti_id = data.get('unti_id')
-        user.leader_id = data.get('leader_id') or ''
+        # user.leader_id = data.get('leader_id') or ''
         user.save()
     #
 
@@ -36,7 +36,7 @@ class UNTIBackend(BaseOAuth2):
         'social_core.pipeline.social_auth.auth_allowed',
         'social_core.pipeline.social_auth.social_user',
         'social_core.pipeline.user.create_user',
-        # 'django_app.update_user',
+        'django_app.update_user',
         'social_core.pipeline.social_auth.associate_user',
         'social_core.pipeline.social_auth.load_extra_data',
         'social_core.pipeline.user.user_details',
