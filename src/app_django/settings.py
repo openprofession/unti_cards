@@ -118,6 +118,9 @@ SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
 SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
 SOCIAL_AUTH_UNTI_SECRET = os.getenv("SOCIAL_AUTH_UNTI_SECRET")
 
+LOGIN_URL = '/sig-ni/'
+APPEND_SLASH = True
+
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
