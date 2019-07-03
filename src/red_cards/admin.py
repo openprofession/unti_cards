@@ -1,6 +1,22 @@
 from django.contrib import admin
 
 from . import models
+from django.contrib.auth.admin import UserAdmin, Group, GroupAdmin
+
+
+class CustomUserAdmin(UserAdmin):
+    """"""
+    list_display = (
+        'username', 'email', 'first_name', 'last_name',
+        'is_assistant',
+        'unti_id',
+        'leader_id',
+    )
+
+
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)
+admin.site.register(models.User, CustomUserAdmin)
 
 
 def reg_admin_model(model):

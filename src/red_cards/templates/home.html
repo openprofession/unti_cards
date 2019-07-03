@@ -1,16 +1,331 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <main class="content">
-        <section class="section-page">
-            <div class="container">
-                <h1 class="section-title">Красные карточки</h1>
-                <div class="event-window">
-                    <img class="img" src="/static/img/logo.svg" alt="" style="width: 35%">
 
-                    <div class="event-window__button"><a class="btn btn-danger btn-lg" href="#">Войти</a></div>
+{% if not user.is_authenticated %}
+    <h1 class="section-title">Красные карточки</h1>
+    <div class="event-window">
+        <img class="img" src="/static/img/logo.svg" alt="" style="width: 35%">
+<a class="btn btn-danger btn-lg"
+{#   href="{% url 'social:begin' backend='unti' %}?next=http://redcards.ap8.ru">#}
+   href="{% url 'social:begin' backend='unti' %}">
+    Войти
+</a>
+    </div>
+{% else %}
+      <h1 class="section-title">{% block content_title %}{% endblock %}</h1>
+      <div class="section-block">
+
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-md-9">
+                <div class="user-name">
+                  <div class="user-name__value">{{ request.user.get_full_name }}</div>
+                    <span class="user-name__id user-id">ID {{ request.user.leader_id }}</span>
                 </div>
+              </div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <ul class="status-indicator">
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                  </ul>
+                </div>
+              </div>
             </div>
-        </section>
-    </main>
+          </div>
+
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <div class="user-event__status">Инцидент оспорен и рассматривается модератором</div>
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Нецензурные выражения 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <p class="user-event__text">Нецензурно выражался, разговаривал на повышенных тонах, отвлекал остальных учеников, все время спорил и мешал проподавателю</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
+                  <div class="event-panel__item"><a class="btn btn-outline-primary" href="challenge.html">Оспорить</a></div>
+                  <div class="event-panel__item">
+                    <div class="timer">
+                      <div class="timer__title">На обжалование осталось</div>
+                      <div class="timer__clock" id="timer1"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Спал на занятии 11.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <p class="user-event__text">Пришел на лекцию в самом конце, отвлекал остальных, потом лег спать. Дремал до конца лекции</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
+                  <div class="event-panel__item">
+                    <p class="timer-out">Время чтобы оспорить истекло, вы можете оплатить карточку</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--yellow">Желтая карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+                    <p class="event-notice-text">При получении второй желтой карточки вы автоматически получите красную. В ином случае желтая карточка автоматически деактивируется спустя 24 часа с момента ее получения</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 class="section-subtitle">Зеленые карточки</h2>
+        <div class="section-block">
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-md-12">
+                <div class="user-status">
+                  <ul class="status-indicator">
+                    <li><span class="circle circle-green"></span></li>
+                    <li><span class="circle circle-green"></span></li>
+                    <li><span class="circle circle-green"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--green">Зеленая карточка</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--green">Зеленая карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+                    <div class="event-notice color--red">Потрачена на погашение красной карточки</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 class="section-subtitle">Деактивированные карточки</h2>
+        <div class="section-block">
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+                    <div class="event-notice color--green">Успешно оспорена</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--yellow">Желтая карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+                    <div class="event-notice">Деактивирована</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+                    <div class="event-notice color--blue">Погашена</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 class="section-title">Доска позора</h2>
+        <div class="users-list">
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-md-9"><a class="user-name user-link" href="#">
+                  <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <div class="user-status__value orange-color">ОТЧИСЛЕН</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-md-9"><a class="user-name user-link" href="#">
+                  <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <div class="user-status__value orange-color">ОТЧИСЛЕН</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-md-9"><a class="user-name user-link" href="#">
+                  <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <ul class="status-indicator">
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-md-9"><a class="user-name user-link" href="#">
+                  <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <ul class="status-indicator">
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-md-9"><a class="user-name user-link" href="#">
+                  <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+              <div class="col-md-3">
+                <div class="user-status">
+                  <ul class="status-indicator">
+                    <li><span class="circle circle-orange"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                    <li><span class="circle"></span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-button align--center"><a class="btn btn-outline-primary" href="#">Показать еще</a></div>
+{% endif %}
+
 {% endblock %}

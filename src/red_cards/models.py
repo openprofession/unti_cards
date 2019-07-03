@@ -1,13 +1,40 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import uuid
-"""
-https://openprofessions.atlassian.net/browse/DEVUNTI-2
 
-"""
 # User = get_user_model()
 
 # from rest_framework_api_key.models import AbstractAPIKey
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
+
+
+class User(AbstractUser):
+    '''
+        python manage.py makemigrations red_cards
+    '''
+
+    second_name = models.CharField(max_length=50)
+
+    is_assistant = models.BooleanField(default=False)
+    unti_id = models.PositiveIntegerField(null=True, db_index=True)
+    leader_id = models.CharField(max_length=255, default='')
+
+    class Meta:
+        verbose_name = _(u'Пользователь')
+        verbose_name_plural = _(u'Пользователи')
+
+    def __str__(self):
+        return '%s %s' % (self.unti_id, self.get_full_name())
+
+    @property
+    def fio(self):
+        return ' '.join(filter(None, [self.last_name, self.first_name, self.second_name]))
+
+    def get_full_name(self):
+        return ' '.join(filter(None, [self.last_name, self.first_name]))
 
 
 class Card(models.Model):

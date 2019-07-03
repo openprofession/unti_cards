@@ -23,6 +23,7 @@ from rest_framework.documentation import include_docs_urls
 from red_cards import views
 
 urlpatterns = [
+    path('', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api-docs/', include_docs_urls(title='DRF: API-docs')),

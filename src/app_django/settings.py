@@ -29,6 +29,7 @@ ALLOWED_HOSTS = ['*', ]
 # Application definition
 
 INSTALLED_APPS = [
+    'social_django',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'social_core',
-    'social_django',
     'django_filters',
     'rest_framework',
     'rest_framework_api_key',
@@ -52,13 +52,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
+    # "social_django.middleware.SocialAuthExceptionMiddleware",
     'app_django.middleware.CustomSocialAuthMiddleware',
 ]
 
-AUTHENTICATION_BACKENDS = (
-    #"'app_django.auth.UNTIBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
 
 ROOT_URLCONF = 'app_django.urls'
 
@@ -73,6 +70,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -159,4 +158,19 @@ STATICFILES_DIRS = [
 
 # https://docs.djangoproject.com/en/2.2/ref/settings/#datetime-input-formats
 # from django.conf.global_settings import DATETIME_INPUT_FORMATS
+
+AUTH_USER_MODEL = 'red_cards.User'
+
+
+SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
+
+SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
+SOCIAL_AUTH_UNTI_SECRET = os.getenv("SOCIAL_AUTH_UNTI_SECRET")
+
+AUTHENTICATION_BACKENDS = (
+    'app_django.auth.UNTIBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+# название тега, по которому приложение понимает, что пользователь ассистент
+ASSISTANT_TAGS_NAME = ['assistant', 'island_assistant']
 

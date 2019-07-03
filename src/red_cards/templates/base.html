@@ -1,22 +1,25 @@
-{% load static %}
-
+{% load static %}<!DOCTYPE html>
 <html lang="ru-RU">
 
 <head>
     <meta charset="UTF-8">
-    <meta content="width=device-width" name="viewport">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/img/logo/favicon-32x32.png"/>
     <link rel="icon" type="image/png" sizes="96x96" href="/static/img/logo/favicon-96x96.png"/>
     <link rel="icon" type="image/png" sizes="16x16" href="/static/img/logo/favicon-16x16.png"/>
     <link href="/static/img/favicon.ico" rel="icon" type="image/x-icon"/>
-    <title></title>
+    <title>{% block browser_title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
 
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&amp;display=swap&amp;subset=cyrillic" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.min.js' %}">
+    <link rel="stylesheet" href="/static/css/main.css">
+    {% block page_css %}
 
+    {% endblock %}
 </head>
 <body>
 <div class="wrapper">
@@ -24,22 +27,21 @@
         {% include 'header.html' %}
     {% endblock %}
 
-    {% block content %}
-    {% endblock %}
-
-    {% block footer %}
-    {% endblock %}
+<main class="content">
+  <section class="section-page">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+    </section>
+  </main>
+  <footer class="footer-main"></footer>
 </div>
-
+<script src="libs/jquery/dist/jquery.min.js"></script>
+<script src="js/main.js"></script>
+<script src="libs/air-datepicker/js/datepicker.min.js"></script>
+<script src="libs/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="libs/bootstrap-select/js/i18n/defaults-ru_RU.min.js"></script>
+<script src="libs/jquery.countdown/jquery.countdown.min.js"></script>
+<script src="js/common.js"></script>
 </body>
-<!-- SCRIPTS -->
-<script src="/static/js/bootstrap.min.js"></script>
-
-
-
-
-{% block js_add %}
-
-{% endblock %}
-
 </html>
