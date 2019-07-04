@@ -56,7 +56,6 @@ MIDDLEWARE = [
     'app_django.middleware.CustomSocialAuthMiddleware',
 ]
 
-
 ROOT_URLCONF = 'app_django.urls'
 
 TEMPLATES = [
@@ -161,7 +160,6 @@ STATICFILES_DIRS = [
 
 AUTH_USER_MODEL = 'red_cards.User'
 
-
 SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
 
 SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
@@ -173,4 +171,12 @@ AUTHENTICATION_BACKENDS = (
 )
 # название тега, по которому приложение понимает, что пользователь ассистент
 ASSISTANT_TAGS_NAME = ['assistant', 'island_assistant']
+
+# интеграция по API с другими приложениями
+CONNECTION_TIMEOUT = 5000
+
+XLE_URL = 'https://xle.u2035test.ru'
+XLE_TOKEN = 'd1veitls2akofd5q'
+
+XLE_CONTEXT = 'island1022-demo'
 

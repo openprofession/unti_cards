@@ -28,6 +28,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api-docs/', include_docs_urls(title='DRF: API-docs')),
     path('api/', include(router.urls)),
+    path('manage/load_events/<date_txt>', views.api_test),
+    path('manage/load_enrolls', views.api_test2),
     path('', views.home),
     *staticfiles_urlpatterns(),
 ]

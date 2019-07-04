@@ -41,6 +41,7 @@ class Card(models.Model):
     class Meta:
         verbose_name = _('Card')
         verbose_name_plural = _('Cards')
+
     #
 
     uuid = models.UUIDField(
@@ -60,11 +61,11 @@ class Card(models.Model):
     TYPE_YELLOW = 'yellow'
     TYPE_GREEN = 'green'
     TYPE_CHOICES = (
-        (TYPE_RED,      _('Red')),
-        (TYPE_YELLOW,   _('Yellow')),
-        (TYPE_GREEN,    _('Green')),
+        (TYPE_RED, _('Red')),
+        (TYPE_YELLOW, _('Yellow')),
+        (TYPE_GREEN, _('Green')),
     )
-    type = models.CharField(        # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
+    type = models.CharField(  # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
         verbose_name=_('Type'),
         help_text=_('тип карточки, string, допустимые значения: [“red”, “yellow”, “green”]'),
         choices=TYPE_CHOICES,
@@ -72,7 +73,7 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    reason = models.TextField(      # причина выдачи карточки, string
+    reason = models.TextField(  # причина выдачи карточки, string
         verbose_name=_('Reason'),
         help_text=_('причина выдачи карточки, string'),
         max_length=512,
@@ -86,9 +87,9 @@ class Card(models.Model):
     SOURCE_LEADER = 'leader'
     SOURCE_EXPERIMENTS = 'experiments'
     SOURCE_CHOICES = (
-        (SOURCE_CARDS,          _('Cards')),
-        (SOURCE_LEADER,         _('Leader')),
-        (SOURCE_EXPERIMENTS,    _('Experiments')),
+        (SOURCE_CARDS, _('Cards')),
+        (SOURCE_LEADER, _('Leader')),
+        (SOURCE_EXPERIMENTS, _('Experiments')),
     )
     source = models.CharField(
         verbose_name=_('Source'),
@@ -99,8 +100,8 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
-        verbose_name=_('Leader'),                   # кому выдана карточка
+    leader_id = models.IntegerField(  # идентификатор пользователя в Leader Id, integer
+        verbose_name=_('Leader'),  # кому выдана карточка
         help_text=_('идентификатор пользователя в Leader Id, integer'),
         # max_length=255,
         null=False, blank=False,
@@ -113,13 +114,13 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    event_uuid = models.CharField(                  # идентификатор мероприятия из Labs, string
+    event_uuid = models.CharField(  # идентификатор мероприятия из Labs, string
         verbose_name=_('Event uuid'),
         help_text=_('идентификатор мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
     )
-    place_uuid = models.CharField(                  # идентификатор места проведения мероприятия из Labs, string
+    place_uuid = models.CharField(  # идентификатор места проведения мероприятия из Labs, string
         verbose_name=_('идентификатор места проведения мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
@@ -142,6 +143,7 @@ class Status(models.Model):
     class Meta:
         verbose_name = _('Status')
         verbose_name_plural = _('Status')
+
     #
 
     card = models.ForeignKey(
@@ -151,7 +153,7 @@ class Status(models.Model):
         null=False, blank=False,
     )
 
-    change_dt = models.DateTimeField(               # время изменения статуса
+    change_dt = models.DateTimeField(  # время изменения статуса
         verbose_name=_('Date change'),
         null=False, blank=False,
         auto_now_add=True,
@@ -161,11 +163,11 @@ class Status(models.Model):
     SYSTEM_LEADER = 'leader'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CHOICES = (
-        (SYSTEM_CARDS,          _('Cards')),
-        (SYSTEM_LEADER,         _('Leader')),
-        (SYSTEM_EXPERIMENTS,    _('Experiments')),
+        (SYSTEM_CARDS, _('Cards')),
+        (SYSTEM_LEADER, _('Leader')),
+        (SYSTEM_EXPERIMENTS, _('Experiments')),
     )
-    system = models.CharField(                      # источник изменения статуса
+    system = models.CharField(  # источник изменения статуса
         verbose_name=_('System'),
         choices=SYSTEM_CHOICES,
         max_length=255,
@@ -192,15 +194,15 @@ class Status(models.Model):
     )
 
     NAME_CHOICES = (
-        (NAME_INITIATED,        _("Initiated")),
-        (NAME_PUBLISHED,        _("Published")),
-        (NAME_CONSIDERATION,    _("Consideration")),
-        (NAME_ISSUED,           _("Issued")),
-        (NAME_ELIMINATED,       _("Eliminated")),
+        (NAME_INITIATED, _("Initiated")),
+        (NAME_PUBLISHED, _("Published")),
+        (NAME_CONSIDERATION, _("Consideration")),
+        (NAME_ISSUED, _("Issued")),
+        (NAME_ELIMINATED, _("Eliminated")),
 
-        (NAME_APPROVED,         _("Approved")),
-        (NAME_REJECTED,         _("Rejected")),
-        (NAME_RECOMMENDED,      _("Recommended")),
+        (NAME_APPROVED, _("Approved")),
+        (NAME_REJECTED, _("Rejected")),
+        (NAME_RECOMMENDED, _("Recommended")),
     )
     name = models.CharField(
         verbose_name=_('Name'),
@@ -227,3 +229,34 @@ class Status(models.Model):
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
 
+
+class Event(models.Model):
+    uuid = models.CharField(max_length=36)
+    activity_uuid = models.CharField(max_length=36)
+    title = models.CharField(max_length=500)
+    capacity = models.CharField(max_length=50)
+    place_uuid = models.CharField(max_length=36)
+    place_title = models.CharField(max_length=500)
+    type_uuid = models.CharField(max_length=36)
+    type_title = models.CharField(max_length=500)
+    start_dt = models.DateTimeField()
+    end_dt = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class EventEnroll(models.Model):
+    event_uuid = models.CharField(max_length=36)
+    unti_id = models.IntegerField()
+    created_dt = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class EventAttendance(models.Model):
+    event_uuid = models.CharField(max_length=36)
+    unti_id = models.IntegerField()
+    reliability = models.DecimalField(max_digits=5, decimal_places=3)
+    completeness = models.DecimalField(max_digits=5, decimal_places=3)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

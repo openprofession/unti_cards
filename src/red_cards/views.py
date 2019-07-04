@@ -1,6 +1,10 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+
+from red_cards.api import XLEApi
+from red_cards.models import Event
+from red_cards.utils import update_events_data, update_enrolls_data
 from . import models
 
 
@@ -25,3 +29,15 @@ def home(request):
     ).distinct()
 
     return render(request, template_name="home.html")
+
+
+def api_test(request, date_txt):
+    update_events_data(date_txt)
+    return HttpResponse("OK!")
+
+
+def api_test2(request):
+    all_events = Event.objects.all()
+    for event in all_events:
+        update_enrolls_data(event_uuid=event.uuid)
+    return HttpResponse("OK!")

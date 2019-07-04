@@ -23,6 +23,7 @@ def reg_admin_model(model):
     def _proxy(model_admin):
         admin.site.register(model, model_admin)
         return model_admin
+
     return _proxy
 
 
@@ -53,6 +54,7 @@ class CardAdmin(admin.ModelAdmin):
             status = 'not set'
         #
         return status
+
     #
     _status.short_description = 'status'
 
@@ -76,3 +78,30 @@ class StatusAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@reg_admin_model(models.Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = (
+        'uuid',
+        'title',
+        'capacity',
+        'place_title',
+        'type_title',
+        'start_dt',
+        'end_dt',
+        'created_at',
+        'updated_at'
+
+    )
+
+
+@reg_admin_model(models.EventEnroll)
+class EventEnrollAdmin(admin.ModelAdmin):
+    list_display = (
+        'event_uuid',
+        'unti_id',
+        'created_dt',
+        'created_at',
+        'updated_at'
+    )
