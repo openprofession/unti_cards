@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'rest_framework_api_key',
+    'widget_tweaks',
+
     'red_cards',
+
 ]
 
 MIDDLEWARE = [

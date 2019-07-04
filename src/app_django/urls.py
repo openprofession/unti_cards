@@ -28,6 +28,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api-docs/', include_docs_urls(title='DRF: API-docs')),
     path('api/', include(router.urls)),
-    path('', views.home),
+    path('', views.home, name='home'),
+    path('card/add', views.AddCardAdminFormView.as_view(), name='card-add'),
     *staticfiles_urlpatterns(),
 ]

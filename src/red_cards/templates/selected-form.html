@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<div class="container">
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+    <li class="breadcrumb-item"><a href="selection-page.html">Выбор студента</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Дмитрий Иванов</li>
+  </ol>
+</nav>
+<h1 class="section-title">Укажите причину</h1>
+<div class="section-block event-block">
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-9">
+        <div class="user-name">
+          <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span>
+        </div>
+        <div class="user-email">alex.rtr@gmail.com</div>
+      </div>
+      <div class="col-md-3">
+        <div class="user-status">
+          <ul class="status-indicator">
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle"></span></li>
+            <li><span class="circle"></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section-block__item">
+            <!-- Form Errors -->
+    {% if form.errors %}
+        <ul class="errors">
+            {% for error in form.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form class="form-event" action="#" method="post">
+        {% csrf_token %}
+
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group ">
+              {{ form.reason.label_tag }}
+              {{ form.reason|attr:"class:form-control form-field" }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+              {{ form.classroom.label_tag }}
+              {{ form.classroom|attr:"class:form-control selectpicker" }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+              {{ form.date.label_tag }}
+            <div class="date-input">
+                {{ form.date|attr:"class:form-control date-select" }}
+                <span class="calendar-icon"></span><span class="arrow-down"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+          {{ form.description.label_tag }}
+          {{ form.description|attr:"class:form-control form-textarea"  }}
+      </div>
+      <div class="radio-button-group">
+          {% for choice, choice_label in form.type.field.choices %}
+            <div class="custom-control custom-radio custom-control-inline">
+              <input class="custom-control-input" id="card-{{ choice }}" name="card"
+                     type="radio" value="{{ choice }}" />
+              <label class="custom-control-label color--{{ choice }}"
+                     for="card-{{ choice }}">
+                  {{ choice_label }}
+              </label>
+            </div>
+        {% endfor %}
+
+      </div>
+
+      <div class="form-button-group">
+        <div class="form-button-group__item"><a class="btn btn-outline-primary" href="selection-page.html">Отмена</a></div>
+        <div class="form-button-group__item">
+          <button class="btn btn-primary" type="submit">Выдать карточку</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+{% endblock %}
+

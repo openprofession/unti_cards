@@ -2,7 +2,11 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.db.models import Count
+from django.utils.translation import ugettext_lazy as _
 from . import models
+
+from django.views.generic import FormView
+from django import forms
 
 
 def home(request):
@@ -117,3 +121,93 @@ def home(request):
         statuses_good_empty=statuses_good_empty,
     ))
 
+# ############################################################################ #
+
+# https://stackoverflow.com/questions/5089396/django-form-field-choices-adding-an-attribute
+# https://stackoverflow.com/questions/41036216/how-to-render-form-choices-manually
+
+class AddCardForm(forms.Form):
+    reason = forms.CharField(
+        label=_('Заголовок'),
+        label_suffix='',
+        widget=forms.TextInput(attrs={
+            'placeholder': _('Напишите заголовок'),
+        }),
+        required=True,
+    )
+    classroom = forms.ChoiceField(
+        label=_('Выберите локацию'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'data-live-search=': 'true',
+        }),
+        choices=(
+            ('1', 'Аудитория 1'),
+            ('2', 'Аудитория 2'),
+            ('3', 'Аудитория 3'),
+            ('101', 'Погреб'),
+            ('102', 'Кабинет директора'),
+        ),
+    )
+    date = forms.DateTimeField(
+        label=_('Выберите дату'),
+        label_suffix='',
+        required=True,
+        widget=forms.TextInput(attrs={
+            'placeholder': _('Дата'),
+        }),
+        input_formats=[
+            '%d.%m.%Y',
+        ]
+    )
+    description = forms.CharField(
+        label=_('Введите описание'),
+        label_suffix='',
+        widget=forms.Textarea(attrs={
+            'placeholder': _('Опишите, что произошло...'),
+        }),
+    )
+    type = forms.ChoiceField(
+        choices=models.Card.TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        required=True,
+    )
+
+
+class AddCardAdminFormView(FormView):
+    template_name = 'selected-form.html'
+    form_class = AddCardForm
+
+    def get_success_url(self):
+        return reverse('home')
+
+    """
+
+
+    Экран 2
+(!) 2с - Выберите событие - удаляем поле из шаблона
+http://test2.x-webdev.info/selected-form.html
+
+
+Шапка карточки  - Фамилия Имя выбранного студента, его leader_id, email, кружочками - количество красных карточек студента в статусе issued
+
+Ассистент заполняет форму на создание карточки:
+
+Заголовок: reason (обязательное)
+
+Аудитория: выпадающий список аудиторий (пример формата D2) c поиском, будет список аудиторий смапленный с placeID (порядка 70)
+
+Выберите событие - удаляем поле из шаблона
+
+Выберите дату + добавить время : incident_dt (обязательно)
+
+Введите описание: description
+
+Radio с типом карточки: type (обязательно)
+
+source: assistant
+
+После нажатия Выдать карточку в базе у соответствующего пользователя создается красная карточка в статусе published или желтая/зеленая карточка в статусе issued, ассистенту выпадает подтверждение об успешном создании карточки
+
+
+    """

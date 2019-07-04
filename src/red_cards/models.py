@@ -232,3 +232,22 @@ class Status(models.Model):
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
 
+
+class ClassRum(models.Model):
+
+    uuid = models.UUIDField(
+        verbose_name=_('uuid'),
+        help_text=_('идентификатор аудитории'),
+        # max_length=255,
+        primary_key=True,
+        unique=True,
+        null=False, blank=False,
+        # editable=False,
+        default=uuid.uuid4,
+    )
+
+    title = models.CharField(
+        verbose_name=_('Name'),
+        max_length=255,
+        null=False, blank=False,
+    )
