@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import uuid
+from django.db.models import Count
 
 # User = get_user_model()
 
@@ -41,7 +42,6 @@ class Card(models.Model):
     class Meta:
         verbose_name = _('Card')
         verbose_name_plural = _('Cards')
-
     #
 
     uuid = models.UUIDField(
@@ -61,11 +61,11 @@ class Card(models.Model):
     TYPE_YELLOW = 'yellow'
     TYPE_GREEN = 'green'
     TYPE_CHOICES = (
-        (TYPE_RED, _('Red')),
-        (TYPE_YELLOW, _('Yellow')),
-        (TYPE_GREEN, _('Green')),
+        (TYPE_RED,      _('Красная карточка')),
+        (TYPE_YELLOW,   _('Желтая карточка')),
+        (TYPE_GREEN,    _('Зеленая карточка')),
     )
-    type = models.CharField(  # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
+    type = models.CharField(        # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
         verbose_name=_('Type'),
         help_text=_('тип карточки, string, допустимые значения: [“red”, “yellow”, “green”]'),
         choices=TYPE_CHOICES,
@@ -73,12 +73,20 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    reason = models.TextField(  # причина выдачи карточки, string
+    def type_verbose(self):
+        return dict(self.TYPE_CHOICES)[self.type]
+
+    reason = models.TextField(      # причина выдачи карточки, string
         verbose_name=_('Reason'),
         help_text=_('причина выдачи карточки, string'),
         max_length=512,
         null=False, blank=False,
 
+    )
+
+    description = models.TextField(
+        verbose_name=_('Description'),
+        null=True, blank=True,
     )
 
     # source - источник выдачи карточки, string,  допустимые значения
@@ -87,9 +95,9 @@ class Card(models.Model):
     SOURCE_LEADER = 'leader'
     SOURCE_EXPERIMENTS = 'experiments'
     SOURCE_CHOICES = (
-        (SOURCE_CARDS, _('Cards')),
-        (SOURCE_LEADER, _('Leader')),
-        (SOURCE_EXPERIMENTS, _('Experiments')),
+        (SOURCE_CARDS,          _('Cards')),
+        (SOURCE_LEADER,         _('Leader')),
+        (SOURCE_EXPERIMENTS,    _('Experiments')),
     )
     source = models.CharField(
         verbose_name=_('Source'),
@@ -100,8 +108,8 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    leader_id = models.IntegerField(  # идентификатор пользователя в Leader Id, integer
-        verbose_name=_('Leader'),  # кому выдана карточка
+    leader_id = models.IntegerField(                # идентификатор пользователя в Leader Id, integer
+        verbose_name=_('Leader'),                   # кому выдана карточка
         help_text=_('идентификатор пользователя в Leader Id, integer'),
         # max_length=255,
         null=False, blank=False,
@@ -114,36 +122,36 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    event_uuid = models.CharField(  # идентификатор мероприятия из Labs, string
+    event_uuid = models.CharField(                  # идентификатор мероприятия из Labs, string
         verbose_name=_('Event uuid'),
         help_text=_('идентификатор мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
     )
-    place_uuid = models.CharField(  # идентификатор места проведения мероприятия из Labs, string
+    place_uuid = models.CharField(                  # идентификатор места проведения мероприятия из Labs, string
         verbose_name=_('идентификатор места проведения мероприятия из Labs, string'),
         max_length=255,
         null=True, blank=True,
     )
 
     def __str__(self):
-        return '{}'.format(self.uuid)
+        return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
     def save(self, *args, **kwargs):
         super(Card, self).save(*args, **kwargs)
-        Status.objects.create(
+        status = Status.objects.create(
             card=self,
             system=Status.SYSTEM_CARDS,
             name=Status.NAME_INITIATED,
             is_public=True,
         )
+        self.current_status = status
 
 
 class Status(models.Model):
     class Meta:
         verbose_name = _('Status')
         verbose_name_plural = _('Status')
-
     #
 
     card = models.ForeignKey(
@@ -153,7 +161,7 @@ class Status(models.Model):
         null=False, blank=False,
     )
 
-    change_dt = models.DateTimeField(  # время изменения статуса
+    change_dt = models.DateTimeField(               # время изменения статуса
         verbose_name=_('Date change'),
         null=False, blank=False,
         auto_now_add=True,
@@ -163,11 +171,11 @@ class Status(models.Model):
     SYSTEM_LEADER = 'leader'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CHOICES = (
-        (SYSTEM_CARDS, _('Cards')),
-        (SYSTEM_LEADER, _('Leader')),
-        (SYSTEM_EXPERIMENTS, _('Experiments')),
+        (SYSTEM_CARDS,          _('Cards')),
+        (SYSTEM_LEADER,         _('Leader')),
+        (SYSTEM_EXPERIMENTS,    _('Experiments')),
     )
-    system = models.CharField(  # источник изменения статуса
+    system = models.CharField(                      # источник изменения статуса
         verbose_name=_('System'),
         choices=SYSTEM_CHOICES,
         max_length=255,
@@ -194,15 +202,15 @@ class Status(models.Model):
     )
 
     NAME_CHOICES = (
-        (NAME_INITIATED, _("Initiated")),
-        (NAME_PUBLISHED, _("Published")),
-        (NAME_CONSIDERATION, _("Consideration")),
-        (NAME_ISSUED, _("Issued")),
-        (NAME_ELIMINATED, _("Eliminated")),
+        (NAME_INITIATED,        _("Initiated")),
+        (NAME_PUBLISHED,        _("Published")),
+        (NAME_CONSIDERATION,    _("Consideration")),
+        (NAME_ISSUED,           _("Issued")),
+        (NAME_ELIMINATED,       _("Eliminated")),
 
-        (NAME_APPROVED, _("Approved")),
-        (NAME_REJECTED, _("Rejected")),
-        (NAME_RECOMMENDED, _("Recommended")),
+        (NAME_APPROVED,         _("Approved")),
+        (NAME_REJECTED,         _("Rejected")),
+        (NAME_RECOMMENDED,      _("Recommended")),
     )
     name = models.CharField(
         verbose_name=_('Name'),
@@ -229,6 +237,25 @@ class Status(models.Model):
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
 
+
+class ClassRum(models.Model):
+
+    uuid = models.UUIDField(
+        verbose_name=_('uuid'),
+        help_text=_('идентификатор аудитории'),
+        # max_length=255,
+        primary_key=True,
+        unique=True,
+        null=False, blank=False,
+        # editable=False,
+        default=uuid.uuid4,
+    )
+
+    title = models.CharField(
+        verbose_name=_('Name'),
+        max_length=255,
+        null=False, blank=False,
+    )
 
 class Event(models.Model):
     uuid = models.CharField(max_length=36)

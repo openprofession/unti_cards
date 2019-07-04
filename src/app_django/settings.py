@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'rest_framework_api_key',
+    'widget_tweaks',
+
     'red_cards',
+
 ]
 
 MIDDLEWARE = [
@@ -55,6 +58,7 @@ MIDDLEWARE = [
     # "social_django.middleware.SocialAuthExceptionMiddleware",
     'app_django.middleware.CustomSocialAuthMiddleware',
 ]
+
 
 ROOT_URLCONF = 'app_django.urls'
 
@@ -160,6 +164,7 @@ STATICFILES_DIRS = [
 
 AUTH_USER_MODEL = 'red_cards.User'
 
+
 SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
 
 SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
@@ -180,3 +185,7 @@ XLE_TOKEN = 'd1veitls2akofd5q'
 
 XLE_CONTEXT = 'island1022-demo'
 
+from django.urls import reverse_lazy
+LOGIN_URL = reverse_lazy('social:begin', kwargs=dict(
+            backend='unti'
+        ))

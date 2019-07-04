@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 
 {% if not user.is_authenticated %}
@@ -13,7 +14,7 @@
 </a>
     </div>
 {% else %}
-      <h1 class="section-title">{% block content_title %}{% endblock %}</h1>
+      <h1 class="section-title">Мои инциденты</h1>
       <div class="section-block">
 
           <div class="section-block__item">
@@ -27,140 +28,158 @@
               <div class="col-md-3">
                 <div class="user-status">
                   <ul class="status-indicator">
-                    <li><span class="circle circle-orange"></span></li>
-                    <li><span class="circle circle-orange"></span></li>
-                    <li><span class="circle circle-orange"></span></li>
-                    <li><span class="circle"></span></li>
-                    <li><span class="circle"></span></li>
+                      {% for c in issued_cards %}
+                          <li>
+                            <!--  {{ c }} -->
+                              <span class="circle circle-orange"></span>
+                          </li>
+                    {% endfor %}
+                            <!--  {{ issued_cards_empty }} -->
+                    {% for c in issued_cards_empty %}
+                        <li><span class="circle"></span></li>
+                    {% endfor %}
                   </ul>
                 </div>
               </div>
             </div>
           </div>
 
+          {% for status in statuses_bad %}
           <div class="section-block__item">
+            <!--
+            CARD: {{ status.card.uuid }}
+            STATUS:
+                    -id:     {{ status.id }}
+                    -date:   {{ status.change_dt }}
+                    -name:   {{ status.name }}
+            -->
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
                 <div class="user-event">
-                  <div class="user-event__status">Инцидент оспорен и рассматривается модератором</div>
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                </div>
-                <div class="card-type">
-                  Тип:
-                  <span class="color--red">Красная карточка</span>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4">
-                <div class="event-panel">
-                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="section-block__item">
-            <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
-                <div class="user-event">
-                  <h3 class="user-event__title">Нецензурные выражения 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                  <p class="user-event__text">Нецензурно выражался, разговаривал на повышенных тонах, отвлекал остальных учеников, все время спорил и мешал проподавателю</p>
-                </div>
-                <div class="card-type">
-                  Тип:
-                  <span class="color--red">Красная карточка</span>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4">
-                <div class="event-panel">
-                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
-                  <div class="event-panel__item"><a class="btn btn-outline-primary" href="challenge.html">Оспорить</a></div>
-                  <div class="event-panel__item">
-                    <div class="timer">
-                      <div class="timer__title">На обжалование осталось</div>
-                      <div class="timer__clock" id="timer1"></div>
-                    </div>
+                  <div class="user-event__status">
+                      {% if status.name == status.NAME_CONSIDERATION %}
+                        Инцидент оспорен и рассматривается модератором
+                      {% endif %}
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="section-block__item">
-            <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
-                <div class="user-event">
-                  <h3 class="user-event__title">Спал на занятии 11.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                  <p class="user-event__text">Пришел на лекцию в самом конце, отвлекал остальных, потом лег спать. Дремал до конца лекции</p>
+                  <h3 class="user-event__title" style="">
+                      {{ status.card.reason }}
+                      {{ status.card.incident_dt|date:"d.m.Y" }}
+                  </h3>
+                  <div class="user-event__date">зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
+                  <p class="user-event__text">
+                      {{ status.card.description }}
+                  </p>
                 </div>
                 <div class="card-type">
                   Тип:
-                  <span class="color--red">Красная карточка</span>
+                  <span
+                    {% if status.card.type == status.card.TYPE_RED %}
+                          class="color--red"
+                    {% elif status.card.type == status.card.TYPE_YELLOW %}
+                          class="color--yellow"
+                    {% else %}
+                          class="color--blue"
+                    {% endif %}
+                  >{{ status.card.type_verbose }}</span>
                 </div>
               </div>
               <div class="col-lg-3 col-md-4">
                 <div class="event-panel">
-                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Оплатить</a></div>
+                {% if status.name == status.NAME_PUBLISHED %}
                   <div class="event-panel__item">
-                    <p class="timer-out">Время чтобы оспорить истекло, вы можете оплатить карточку</p>
+                      <a class="btn btn-outline-primary" href="challenge.html">Оспорить</a>
                   </div>
+                    <div class="event-panel__item">
+                        <div class="timer">
+                          <div class="timer__title">а обжалование осталось 24 часа</div>
+                          <div class="timer__clock" id="timer1"></div>
+                        </div>
+                      </div>
+                {% endif %}
+                {% if status.name == status.NAME_CONSIDERATION %}
+                  <div class="event-panel__item">
+                        <p class="timer-out">Запрос на рассмотрении.</p>
+                      </div>
+                {% endif %}
+
+                    {% if status.card.type == status.card.TYPE_YELLOW %}
+                  <div class="event-panel__item">
+                       <p class="event-notice-text">При получении второй желтой карточки вы автоматически получите красную. В ином случае желтая карточка автоматически деактивируется спустя 24 часа с момента ее получения</p>
+                  </div>
+                    {% endif %}
+
                 </div>
               </div>
             </div>
           </div>
-          <div class="section-block__item">
-            <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
-                <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                </div>
-                <div class="card-type">
-                  Тип:
-                  <span class="color--yellow">Желтая карточка</span>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4">
-                <div class="event-panel">
-                  <div class="event-panel__item">
-                    <p class="event-notice-text">При получении второй желтой карточки вы автоматически получите красную. В ином случае желтая карточка автоматически деактивируется спустя 24 часа с момента ее получения</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
+          {% endfor %}
+
+
         </div>
+
+
+
         <h2 class="section-subtitle">Зеленые карточки</h2>
         <div class="section-block">
+
           <div class="section-block__item">
             <div class="row align-items-center">
               <div class="col-md-12">
                 <div class="user-status">
                   <ul class="status-indicator">
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle"></span></li>
-                    <li><span class="circle"></span></li>
+
+                      {% for c in statuses_good %}
+                          <li>
+                            <!--  {{ c }} -->
+                              <span class="circle circle-green"></span>
+                          </li>
+                    {% endfor %}
+                            <!--  {{ statuses_good_empty }} -->
+                    {% for c in statuses_good_empty %}
+                        <li>
+                        <!--  {{ c }} -->
+                            <span class="circle"></span>
+                        </li>
+                    {% endfor %}
                   </ul>
                 </div>
               </div>
             </div>
           </div>
+
+          {% for status in statuses_good %}
           <div class="section-block__item">
+            <!--
+            CARD: {{ status.card.uuid }}
+            STATUS:
+                    -id:     {{ status.id }}
+                    -date:   {{ status.change_dt }}
+                    -name:   {{ status.name }}
+            -->
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
                 <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <h3 class="user-event__title">
+
+                      {{ status.card.reason }}
+                      {{ status.card.incident_dt|date:"d.m.Y" }}
+                  </h3>
+                  <div class="user-event__date">зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
+                  <p class="user-event__text">
+                      {{ status.card.description }}
+                  </p>
                 </div>
                 <div class="card-type">
                   Тип:
-                  <span class="color--green">Зеленая карточка</span>
+                  <span class="color--green">{{ status.card.type_verbose }}</span>
                 </div>
               </div>
             </div>
           </div>
+            {% endfor %}
+
+    {% comment %}
           <div class="section-block__item">
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
@@ -182,7 +201,10 @@
               </div>
             </div>
           </div>
+    {% endcomment %}
         </div>
+
+    {% comment %}
         <h2 class="section-subtitle">Деактивированные карточки</h2>
         <div class="section-block">
           <div class="section-block__item">
@@ -325,7 +347,11 @@
             </div>
           </div>
         </div>
+    {% endcomment %}
+
+    {% comment %}
         <div class="section-button align--center"><a class="btn btn-outline-primary" href="#">Показать еще</a></div>
+    {% endcomment %}
 {% endif %}
 
 {% endblock %}

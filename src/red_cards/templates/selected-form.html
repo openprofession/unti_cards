@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<div class="container">
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+    <li class="breadcrumb-item"><a href="selection-page.html">Выбор студента</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ target_user.get_full_name }}</li>
+  </ol>
+</nav>
+<h1 class="section-title">Укажите причину</h1>
+<div class="section-block event-block">
+
+    {% if form.errors %}
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-9">
+
+            <!-- Form Errors -->
+
+        <h3>Ошибки:</h3>
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                {{ field.label }}: <strong> {{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+
+      </div>
+    </div>
+  </div>
+    {% endif %}
+
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-9">
+        <div class="user-name">
+          <div class="user-name__value">{{ target_user.get_full_name }}</div>
+            <span class="user-name__id user-id">ID {{ target_user.leader_id }}</span>
+        </div>
+        <div class="user-email">{{ target_user.email }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="user-status">
+          <ul class="status-indicator">
+              {% for c in issued_cards %}
+                  <li>
+                    <!--  {{ c }} -->
+                      <span class="circle circle-orange"></span>
+                  </li>
+            {% endfor %}
+                    <!--  {{ issued_cards_empty }} -->
+            {% for c in issued_cards_empty %}
+                <li><span class="circle"></span></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section-block__item">
+    <form class="form-event" action="" method="POST">
+        {% csrf_token %}
+
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group ">
+              {{ form.reason.label_tag }}
+              {{ form.reason|attr:"class:form-control form-field" }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+              {{ form.classroom.label_tag }}
+              {{ form.classroom|attr:"class:form-control selectpicker" }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+              {{ form.date.label_tag }}
+            <div class="date-input">
+                {{ form.date|attr:"class:form-control date-select" }}
+                <span class="calendar-icon"></span><span class="arrow-down"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+          {{ form.description.label_tag }}
+          {{ form.description|attr:"class:form-control form-textarea"  }}
+      </div>
+      <div class="radio-button-group">
+          {% for choice, choice_label in form.type.field.choices %}
+            <div class="custom-control custom-radio custom-control-inline">
+              <input class="custom-control-input" id="card-{{ choice }}" name="type"
+                     type="radio" value="{{ choice }}" />
+              <label class="custom-control-label color--{{ choice }}"
+                     for="card-{{ choice }}">
+                  {{ choice_label }}
+              </label>
+            </div>
+        {% endfor %}
+
+      </div>
+        {{ form.leader_id }}
+
+      <div class="form-button-group">
+        <div class="form-button-group__item"><a class="btn btn-outline-primary" href="selection-page.html">Отмена</a></div>
+        <div class="form-button-group__item">
+          <button class="btn btn-primary" type="submit">Выдать карточку</button>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+</div>
+{% endblock %}
+
