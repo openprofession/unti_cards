@@ -68,7 +68,6 @@
                   <div class="user-event__date">зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
                   <p class="user-event__text">
                       {{ status.card.description }}
-
                   </p>
                 </div>
                 <div class="card-type">
@@ -123,35 +122,64 @@
 
         <h2 class="section-subtitle">Зеленые карточки</h2>
         <div class="section-block">
+
           <div class="section-block__item">
             <div class="row align-items-center">
               <div class="col-md-12">
                 <div class="user-status">
                   <ul class="status-indicator">
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle circle-green"></span></li>
-                    <li><span class="circle"></span></li>
-                    <li><span class="circle"></span></li>
+
+                      {% for c in statuses_good %}
+                          <li>
+                            <!--  {{ c }} -->
+                              <span class="circle circle-green"></span>
+                          </li>
+                    {% endfor %}
+                            <!--  {{ statuses_good_empty }} -->
+                    {% for c in statuses_good_empty %}
+                        <li>
+                        <!--  {{ c }} -->
+                            <span class="circle"></span>
+                        </li>
+                    {% endfor %}
                   </ul>
                 </div>
               </div>
             </div>
           </div>
+
+          {% for status in statuses_good %}
           <div class="section-block__item">
+            <!--
+            CARD: {{ status.card.uuid }}
+            STATUS:
+                    -id:     {{ status.id }}
+                    -date:   {{ status.change_dt }}
+                    -name:   {{ status.name }}
+            -->
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
                 <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <h3 class="user-event__title">
+
+                      {{ status.card.reason }}
+                      {{ status.card.incident_dt|date:"d.m.Y" }}
+                  </h3>
+                  <div class="user-event__date">зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
+                  <p class="user-event__text">
+                      {{ status.card.description }}
+                  </p>
                 </div>
                 <div class="card-type">
                   Тип:
-                  <span class="color--green">Зеленая карточка</span>
+                  <span class="color--green">{{ status.card.type_verbose }}</span>
                 </div>
               </div>
             </div>
           </div>
+            {% endfor %}
+
+    {% comment %}
           <div class="section-block__item">
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
@@ -173,7 +201,10 @@
               </div>
             </div>
           </div>
+    {% endcomment %}
         </div>
+
+    {% comment %}
         <h2 class="section-subtitle">Деактивированные карточки</h2>
         <div class="section-block">
           <div class="section-block__item">
@@ -316,7 +347,11 @@
             </div>
           </div>
         </div>
+    {% endcomment %}
+
+    {% comment %}
         <div class="section-button align--center"><a class="btn btn-outline-primary" href="#">Показать еще</a></div>
+    {% endcomment %}
 {% endif %}
 
 {% endblock %}
