@@ -177,3 +177,7 @@ AUTHENTICATION_BACKENDS = (
 # название тега, по которому приложение понимает, что пользователь ассистент
 ASSISTANT_TAGS_NAME = ['assistant', 'island_assistant']
 
+from django.urls import reverse_lazy
+LOGIN_URL = reverse_lazy('social:begin', kwargs=dict(
+            backend='unti'
+        ))
