@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import uuid
+from django.db.models import Count
 
 # User = get_user_model()
 
@@ -60,9 +61,9 @@ class Card(models.Model):
     TYPE_YELLOW = 'yellow'
     TYPE_GREEN = 'green'
     TYPE_CHOICES = (
-        (TYPE_RED,      _('Red')),
-        (TYPE_YELLOW,   _('Yellow')),
-        (TYPE_GREEN,    _('Green')),
+        (TYPE_RED,      _('Красная карточка')),
+        (TYPE_YELLOW,   _('Желтая карточка')),
+        (TYPE_GREEN,    _('Зеленая карточка')),
     )
     type = models.CharField(        # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
         verbose_name=_('Type'),
@@ -72,12 +73,20 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
+    def type_verbose(self):
+        return dict(self.TYPE_CHOICES)[self.type]
+
     reason = models.TextField(      # причина выдачи карточки, string
         verbose_name=_('Reason'),
         help_text=_('причина выдачи карточки, string'),
         max_length=512,
         null=False, blank=False,
 
+    )
+
+    description = models.TextField(
+        verbose_name=_('Description'),
+        null=True, blank=True,
     )
 
     # source - источник выдачи карточки, string,  допустимые значения
@@ -126,16 +135,17 @@ class Card(models.Model):
     )
 
     def __str__(self):
-        return '{}'.format(self.uuid)
+        return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
     def save(self, *args, **kwargs):
         super(Card, self).save(*args, **kwargs)
-        Status.objects.create(
+        status = Status.objects.create(
             card=self,
             system=Status.SYSTEM_CARDS,
             name=Status.NAME_INITIATED,
             is_public=True,
         )
+        self.current_status = status
 
 
 class Status(models.Model):
@@ -208,11 +218,6 @@ class Status(models.Model):
         max_length=255,
         null=False, blank=False,
     )
-
-    # description = models.TextField(
-    #     verbose_name=_('Description'),
-    #     null=True, blank=True,
-    # )
 
     is_public = models.BooleanField(
         verbose_name=_('is public'),
