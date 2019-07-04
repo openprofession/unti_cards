@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('red_cards', '0001_initial'),
+        ('red_cards', '0003_classrum'),
     ]
 
     operations = [
