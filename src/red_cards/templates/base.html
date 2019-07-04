@@ -30,6 +30,35 @@
 <main class="content">
   <section class="section-page">
     <div class="container">
+        {% if messages %}
+
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-md-12">
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <div class="alert alert-success alert-dismissible" style="margin: 10px 50px;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ message }}
+            </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+            <div class="alert alert-danger alert-dismissible" style="margin: 10px 50px;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ message }}
+            </div>
+            {% else %}
+            <div class="alert alert-info alert-dismissible" style="margin: 10px 50px;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+              </div>
+              </div>
+              </div>
+        {% endif %}
+
       {% block content %}{% endblock %}
     </div>
     </section>

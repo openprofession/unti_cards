@@ -4,9 +4,27 @@ from django.urls import reverse
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from . import models
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 
 from django.views.generic import FormView
 from django import forms
+
+_sql_get_cards = """
+    SELECT card.*, st.* from red_cards_status  as st
+    INNER JOIN red_cards_card as card
+    ON card.uuid = st.card_id
+    WHERE card.leader_id={}
+      AND st.change_dt = (
+        SELECT MAX(change_dt) 
+        FROM red_cards_status as st2 
+        WHERE st2.card_id = st.card_id
+      )
+    {}
+    ORDER BY st.change_dt
+    ;
+"""
 
 
 def home(request):
@@ -17,27 +35,13 @@ def home(request):
         return HttpResponseRedirect(url)
     #
     user = request.user
-    sql = """
-        SELECT card.*, st.* from red_cards_status  as st
-        INNER JOIN red_cards_card as card
-        ON card.uuid = st.card_id
-        WHERE card.leader_id={}
-        AND st.change_dt = (
-            SELECT MAX(change_dt) 
-            FROM red_cards_status as st2 
-            WHERE st2.card_id = st.card_id
-        )
-        {}
-        ORDER BY st.change_dt
-        ;
-    """
     # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #
     # published(карточка 2 на странице),
     # consideration(карточка 1),
     # issued(карточка 3)
-    statuses_bad = models.Status.objects.raw(sql.format(
+    statuses_bad = models.Status.objects.raw(_sql_get_cards.format(
         user.leader_id,
         '''
             AND card.type IN ('{red}', '{yellow}')
@@ -82,7 +86,7 @@ def home(request):
     # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #
-    statuses_good = models.Status.objects.raw(sql.format(
+    statuses_good = models.Status.objects.raw(_sql_get_cards.format(
         user.leader_id,
         '''
             AND card.type = '{green}'
@@ -126,6 +130,7 @@ def home(request):
 # https://stackoverflow.com/questions/5089396/django-form-field-choices-adding-an-attribute
 # https://stackoverflow.com/questions/41036216/how-to-render-form-choices-manually
 
+
 class AddCardForm(forms.Form):
     reason = forms.CharField(
         label=_('Заголовок'),
@@ -168,18 +173,95 @@ class AddCardForm(forms.Form):
         }),
     )
     type = forms.ChoiceField(
+        label=_('Тип карточки'),
         choices=models.Card.TYPE_CHOICES,
         widget=forms.RadioSelect,
         required=True,
     )
+    leader_id = forms.IntegerField(
+        widget=forms.HiddenInput,
+    )
+
+    def save(self):
+        obj = models.Card.objects.create(
+            type=self.cleaned_data.get('type'),
+            reason=self.cleaned_data.get('reason'),
+            description=self.cleaned_data.get('description'),
+            source=models.Card.SOURCE_LEADER,
+            incident_dt=self.cleaned_data.get('date'),
+            leader_id=self.cleaned_data.get('leader_id'),
+        )
+        return obj
 
 
-class AddCardAdminFormView(FormView):
+class AddCardAdminFormView(LoginRequiredMixin, FormView):
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
+    def get_target_user(self):
+        # get_object_or_404(Product, slug=self.kwargs['slug']
+        return models.User.objects.get(leader_id=self.kwargs['leader_id'])
+
+    def get_context_data(self, **kwargs):
+        context = super(AddCardAdminFormView, self).get_context_data(**kwargs)
+        user = self.get_target_user()
+        assert isinstance(user, models.User)
+        form = context['form']
+        form.fields['leader_id'].initial = user.leader_id
+
+        sql = _sql_get_cards.format(
+            user.leader_id,
+            '''
+                AND card.type = '{red}'
+                AND st.name = '{issued}'
+            '''.format(
+                red=models.Card.TYPE_RED,
+                issued=models.Status.NAME_ISSUED,
+            )
+        )
+        red_statuses = models.Status.objects.raw(sql)
+        issued_cards = (
+            s.card for s in red_statuses
+            if s.card.type == models.Card.TYPE_RED
+                and s.name == models.Status.NAME_ISSUED
+        )
+        issued_cards = list(issued_cards)
+        max_issued_cards = 5
+        issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
+        if issued_cards_empty_cunt < 0:
+            issued_cards_empty_cunt = 0
+        #
+        issued_cards_empty = []
+        if issued_cards_empty_cunt >= 1:
+            issued_cards_empty = list(range(0, issued_cards_empty_cunt))
+        #
+
+        context.update({
+            'target_user': user,
+            'issued_cards': issued_cards,
+            'issued_cards_empty': issued_cards_empty,
+        })
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+
+            card = form.save()
+            assert isinstance(card, models.Card)
+            messages.success(
+                request, 'Карточка успешно добавлена {}'.format(card)
+            )
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+        #
+
     def get_success_url(self):
-        return reverse('home')
+        return reverse('card-add', kwargs=dict(leader_id=self.kwargs['leader_id']))
+
 
     """
 
