@@ -71,14 +71,13 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     issued_cards = Card.objects.filter(
-        status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION, Status.NAME_PUBLISHED]
+        type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id') or 1
     ).annotate(
         max_date=Max('status__change_dt')
     ).filter(
         status__change_dt=F('max_date')
     ).filter(
-        type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id') or 1
-    )
+        status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION, Status.NAME_PUBLISHED])
     print(issued_cards)
 
     issued_cards = list(issued_cards)
