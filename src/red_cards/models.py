@@ -136,7 +136,9 @@ class Status(models.Model):
 
     def save(self, *args, **kwargs):
         self.is_public = self.name not in self.PRIVATE_STATUSES
-        self.card.last_status = self.name
+        status_card = self.card
+        status_card.last_status = self.name
+        status_card.save()
         super(Status, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -241,7 +243,7 @@ class Card(models.Model):
     )
 
     last_status = models.CharField(
-        verbose_name=_('Name'),
+        verbose_name=_('Last Status'),
         choices=Status.NAME_CHOICES,
         max_length=255,
         null=False, blank=False,
