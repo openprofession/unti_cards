@@ -70,7 +70,7 @@ def home(request):
     #    if s.card.type == models.Card.TYPE_RED
     #       and s.name == models.Status.NAME_ISSUED
     # )
-    issued_cards = Card.objects.filter(type=Card.TYPE_RED)
+    issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=user.leader_id)
     issued_cards = list(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
@@ -102,7 +102,7 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     # good_cards = list(good_cards)
-    good_cards = Card.objects.filter(type=Card.TYPE_GREEN)
+    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=user.leader_id)
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)
@@ -116,11 +116,11 @@ def home(request):
 
     # ------------------------------------------------------------------------ #
     return render(request, template_name="home.html", context=dict(
-        #statuses_bad=statuses_bad,
+        # statuses_bad=statuses_bad,
         issued_cards=issued_cards,
         issued_cards_empty=issued_cards_empty,
 
-        #statuses_good=statuses_good,
+        # statuses_good=statuses_good,
         statuses_good_empty=statuses_good_empty,
     ))
 
