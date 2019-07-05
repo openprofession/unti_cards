@@ -79,6 +79,7 @@ def home(request):
         status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION, Status.NAME_PUBLISHED])
 
     issued_cards = list(issued_cards)
+    print(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
     if issued_cards_empty_cunt < 0:
