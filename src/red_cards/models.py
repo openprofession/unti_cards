@@ -7,7 +7,10 @@ from django.db.models import Count
 
 # from rest_framework_api_key.models import AbstractAPIKey
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import (
+    AbstractUser,
+    UserManager as _UserManager,
+)
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,8 +23,19 @@ class User(AbstractUser):
     second_name = models.CharField(max_length=50)
 
     is_assistant = models.BooleanField(default=False)
-    unti_id = models.PositiveIntegerField(null=True, db_index=True)
-    leader_id = models.CharField(max_length=255, default='')
+    unti_id = models.PositiveIntegerField(
+        db_index=True,
+        null=True,
+        blank=True,
+        unique=True,
+    )
+    leader_id = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        unique=True,
+    )
+    # leader_id = models.IntegerField(  # todo: set leader_id as IntegerField
 
     class Meta:
         verbose_name = _(u'Пользователь')
@@ -147,6 +161,13 @@ class Card(models.Model):
         )
         self.current_status = status
 
+    def get_status(self):
+        return Status.objects.filter(
+            card=self,
+        ).order_by(
+            '-change_dt'
+        ).first()
+
 
 class Status(models.Model):
     class Meta:
@@ -256,6 +277,50 @@ class ClassRum(models.Model):
         max_length=255,
         null=False, blank=False,
     )
+
+
+class Appeal(models.Model):
+    class Meta:
+        verbose_name = _('Appeal')
+        verbose_name_plural = _('Appeals')
+    #
+
+    description = models.TextField(
+        verbose_name=_('Description'),
+        null=False, blank=False,
+    )
+    file = models.FileField(
+        verbose_name=_('file'),
+        null=True, blank=True,
+    )
+
+    create_dt = models.DateTimeField(               # время изменения статуса
+        verbose_name=_('Date change'),
+        null=False, blank=False,
+        auto_now_add=True,
+    )
+
+    STATUS_NEW = "new"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_CHOICES = (
+        (STATUS_NEW,        _("New")),
+        (STATUS_APPROVED,   _("Approved")),
+        (STATUS_REJECTED,   _("Rejected")),
+    )
+    status = models.CharField(
+        verbose_name=_('status'),
+        choices=STATUS_CHOICES,
+        max_length=255,
+        null=False, blank=False,
+    )
+    card = models.ForeignKey(
+        Card,
+        verbose_name=_('card'),
+        on_delete=models.CASCADE,
+        null=False, blank=False,
+    )
+
 
 class Event(models.Model):
     uuid = models.CharField(max_length=36)

@@ -163,6 +163,14 @@ STATICFILES_DIRS = [
 # from django.conf.global_settings import DATETIME_INPUT_FORMATS
 
 AUTH_USER_MODEL = 'red_cards.User'
+USER_FIELDS = (
+    'email',
+    'username',
+    'first_name',
+    'last_name',
+    'unti_id',
+    'leader_id',
+)
 
 
 SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")

@@ -1,24 +1,41 @@
 from django.conf import settings
 from social_core.backends.oauth import BaseOAuth2
 from social_core.utils import handle_http_errors
+from django.contrib.auth import get_user_model
 
 from urllib.parse import urljoin
 
 
 def update_user(strategy, details, user=None, backend=None, *args, **kwargs):
+    # https://stackoverflow.com/questions/24629705/django-using-get-user-model-vs-settings-auth-user-model
     data = kwargs['response']
+    unti_id = data.get('unti_id')
+    leader_id = data.get('leader_id') or ''
+    if not user:
+        if unti_id:
+            User = get_user_model()
+            user = User.objects.filter(unti_id=unti_id).first()
+    #   #
+
+    if not user:
+        if leader_id:
+            User = get_user_model()
+            user = User.objects.filter(leader_id=leader_id).first()
+    #   #
+
     if user:
         user.email = data['email']
         user.username = data['username']
-        user.first_name = data['firstname']
-        user.last_name = data['lastname']
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
         user.second_name = data.get('secondname', '') or ''
         # user.icon = data.get('image') or {}
         tags = data.get('tags') or []
         # user.is_assistant = any(i in tags for i in settings.ASSISTANT_TAGS_NAME)
-        user.unti_id = data.get('unti_id')
-        user.leader_id = data.get('leader_id') or ''
+        user.unti_id = unti_id
+        user.leader_id = leader_id
         user.save()
+        return {'is_new': False}
     #
 
 
@@ -37,8 +54,8 @@ class UNTIBackend(BaseOAuth2):
         'social_core.pipeline.social_auth.social_uid',
         'social_core.pipeline.social_auth.auth_allowed',
         'social_core.pipeline.social_auth.social_user',
-        'social_core.pipeline.user.create_user',
         'app_django.auth.update_user',
+        'social_core.pipeline.user.create_user',
         'social_core.pipeline.social_auth.associate_user',
         'social_core.pipeline.social_auth.load_extra_data',
         'social_core.pipeline.user.user_details',
@@ -89,6 +106,9 @@ class UNTIBackend(BaseOAuth2):
             params={'access_token': access_token},
             headers={'Authorization': 'Bearer {}'.format(access_token)},
         )
+        result['leader_id'] = int(result['leader_id'])
+        result['first_name'] = result.pop('firstname')
+        result['last_name'] = result.pop('lastname')
         return result
 
     def do_auth(self, access_token, *args, **kwargs):

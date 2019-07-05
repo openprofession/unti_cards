@@ -43,11 +43,7 @@ class CardAdmin(admin.ModelAdmin):
 
     def _status(self, obj):
         assert isinstance(obj, models.Card)
-        status = models.Status.objects.filter(
-            card=obj
-        ).order_by(
-            '-change_dt',
-        ).first()
+        status = obj.get_status()
         if status:
             status = status.name
         else:
