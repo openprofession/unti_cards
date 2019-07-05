@@ -20,13 +20,8 @@ _sql_get_cards = """
     INNER JOIN red_cards_card as card
     ON card.uuid = st.card_id
     WHERE card.leader_id={}
-      AND st.change_dt = (
-        SELECT MAX(change_dt) 
-        FROM red_cards_status as st2 
-        WHERE st2.card_id = st.card_id
-      )
+      AND st.change_dt = (SELECT MAX(change_dt) FROM red_cards_status as st2 WHERE st2.card_id = st.card_id)
     ORDER BY st.change_dt
-    ;
 """
 
 
