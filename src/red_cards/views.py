@@ -41,7 +41,7 @@ def home(request):
     # consideration(карточка 1),
     # issued(карточка 3)
     statuses_bad = models.Status.objects.raw(_sql_get_cards.format(
-        user.leader_id,
+        getattr(user, 'leader_id', '0'),
         '''
             AND card.type IN ('{red}', '{yellow}')
             AND 
@@ -86,7 +86,7 @@ def home(request):
 
     # ------------------------------------------------------------------------ #
     statuses_good = models.Status.objects.raw(_sql_get_cards.format(
-        user.leader_id,
+        getattr(user, 'leader_id', '0'),
         '''
             AND card.type = '{green}'
             AND st.name = '{issued}'
