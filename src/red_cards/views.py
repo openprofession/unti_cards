@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
 from red_cards.api import XLEApi
-from red_cards.models import Event, Card
+from red_cards.models import Event, Card, Status
 from red_cards.utils import update_events_data, update_enrolls_data
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
@@ -71,7 +71,7 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id', 0),
-                                       status__name__in=('issued', 'consideration'))
+                                       status__name__in=(Status.NAME_ISSUED, Status.NAME_CONSIDERATION))
     issued_cards = list(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
@@ -104,7 +104,7 @@ def home(request):
     # )
     # good_cards = list(good_cards)
     good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id', 0),
-                                     status__name__in=('issued', 'consideration'))
+                                     status__name__in=(Status.NAME_ISSUED, Status.NAME_CONSIDERATION))
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)
