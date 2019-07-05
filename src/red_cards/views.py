@@ -71,7 +71,12 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id') or 1,
-                                       status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION])
+                                       status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION, Status.NAME_PUBLISHED]).annotate(
+        max_date=Max('status__change_dt')
+    ).filter(
+        status__change_dt=F('max_date')
+    )
+
     issued_cards = list(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
