@@ -367,6 +367,6 @@ class EventAttendance(models.Model):
 
 @receiver(post_save, sender=Status, dispatch_uid="update_last_status")
 def update_stock(sender, instance, **kwargs):
-    card = Card.objects.get(uuid=instance.card.uuid)
+    card = instance.card
     card.last_status = instance.name
     card.save()
