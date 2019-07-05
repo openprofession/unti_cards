@@ -106,7 +106,7 @@ def home(request):
     good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id') or 1).annotate(
         max_date=Max('status__change_dt')
     ).filter(
-        date=F('max_date')
+        status__change_dt=F('max_date')
     )
     statuses_good_empty = []
     _max_cards = 5
