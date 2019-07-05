@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import uuid
 from django.db.models import Count
@@ -136,10 +138,6 @@ class Status(models.Model):
 
     def save(self, *args, **kwargs):
         self.is_public = self.name not in self.PRIVATE_STATUSES
-        status_card = self.card
-        status_card.last_status = self.name
-        status_card.save()
-        print('update last status')
         super(Status, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -255,15 +253,14 @@ class Card(models.Model):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
     def save(self, *args, **kwargs):
-
+        super(Card, self).save(*args, **kwargs)
         status = Status.objects.get_or_create(
             card=self,
             system=Status.SYSTEM_CARDS,
             name=Status.NAME_INITIATED,
             is_public=True,
         )
-        self.last_status = status
-        super(Card, self).save(*args, **kwargs)
+        self.current_status = status
 
     def get_status(self):
         return Status.objects.filter(
@@ -366,3 +363,10 @@ class EventAttendance(models.Model):
     completeness = models.DecimalField(max_digits=5, decimal_places=3)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+@receiver(post_save, sender=Status, dispatch_uid="update_last_status")
+def update_stock(sender, instance, **kwargs):
+    card = Card.objects.get(card=instance.card)
+    card.last_status = instance.name
+    card.save()
