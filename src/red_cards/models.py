@@ -136,10 +136,10 @@ class Status(models.Model):
 
     def save(self, *args, **kwargs):
         self.is_public = self.name not in self.PRIVATE_STATUSES
+        super(Status, self).save(*args, **kwargs)
         status_card = self.card
         status_card.last_status = self.name
         status_card.save()
-        super(Status, self).save(*args, **kwargs)
 
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
