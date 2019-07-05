@@ -6,10 +6,9 @@ from red_cards.models import Event, EventEnroll
 
 
 def update_events_data(date_txt=''):
-    existing_uuids = set(Event.objects.values_list('uuid', flat=True))
-    print(XLEApi().get_timetable(date_txt))
+    #existing_uuids = set(Event.objects.values_list('uuid', flat=True))
     try:
-        for event in XLEApi().get_timetable('2019-07-01'):
+        for event in XLEApi().get_timetable(date_txt):
             uuid = event.get('event_uuid', '')
             activity_uuid = event.get('activity_uuid', '')
             title = event.get('title', '')
