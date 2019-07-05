@@ -139,6 +139,7 @@ class Status(models.Model):
         status_card = self.card
         status_card.last_status = self.name
         status_card.save()
+        print('update last status')
         super(Status, self).save(*args, **kwargs)
 
     def __str__(self):
