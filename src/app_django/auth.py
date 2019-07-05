@@ -9,18 +9,28 @@ from urllib.parse import urljoin
 def update_user(strategy, details, user=None, backend=None, *args, **kwargs):
     # https://stackoverflow.com/questions/24629705/django-using-get-user-model-vs-settings-auth-user-model
     data = kwargs['response']
+
+    email = data['email']
     unti_id = data.get('unti_id')
-    leader_id = data.get('leader_id') or ''
+    leader_id = str(data.get('leader_id') or '')  # todo: need set int for user-model
+
+    User = get_user_model()
+
+    # by unti_id
     if not user:
         if unti_id:
-            User = get_user_model()
             user = User.objects.filter(unti_id=unti_id).first()
     #   #
 
+    # by leader_id
     if not user:
         if leader_id:
-            User = get_user_model()
             user = User.objects.filter(leader_id=leader_id).first()
+    #   #
+
+    # by email
+    if not user:
+        user = User.objects.filter(email=email).first()
     #   #
 
     if user:
