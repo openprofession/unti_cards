@@ -70,7 +70,7 @@ def home(request):
     #    if s.card.type == models.Card.TYPE_RED
     #       and s.name == models.Status.NAME_ISSUED
     # )
-    issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=int(getattr(user, 'leader_id', '0')),
+    issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id', 0),
                                        status__name__in=('issued', 'consideration'))
     issued_cards = list(issued_cards)
     max_issued_cards = 5
@@ -103,7 +103,7 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     # good_cards = list(good_cards)
-    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=int(getattr(user, 'leader_id', '0')),
+    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id', 0),
                                      status__name__in=('issued', 'consideration'))
     statuses_good_empty = []
     _max_cards = 5
