@@ -35,7 +35,7 @@ def update_user(strategy, details, user=None, backend=None, *args, **kwargs):
 
     if user:
         user.email = data['email']
-        user.username = data['username']
+        # user.username = data['username']  # login to django-admin!
         user.first_name = data['first_name']
         user.last_name = data['last_name']
         user.second_name = data.get('secondname', '') or ''

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<div class="container">
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Оспаривание инцидента</li>
+  </ol>
+</nav>
+<h1 class="section-title">Оспаривание инцидента</h1>
+<div class="event-window">
+  <div class="event-window__icon check--icon"></div>
+  <div class="event-window__title">Ваше оспаривание успешно принято</div>
+  <div class="event-window__descr">Дождитесь решения модератора</div>
+  <div class="event-window__button"><a class="btn btn-primary" href="{% url 'home' %}">Назад</a></div>
+</div>
+</div>
+{% endblock %}

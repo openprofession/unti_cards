@@ -197,3 +197,7 @@ from django.urls import reverse_lazy
 LOGIN_URL = reverse_lazy('social:begin', kwargs=dict(
             backend='unti'
         ))
+FILE_UPLOAD_HANDLERS = (
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+)

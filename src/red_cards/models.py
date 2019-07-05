@@ -324,6 +324,7 @@ class Appeal(models.Model):
         choices=STATUS_CHOICES,
         max_length=255,
         null=False, blank=False,
+        default=STATUS_NEW,
     )
     card = models.ForeignKey(
         Card,
@@ -331,6 +332,11 @@ class Appeal(models.Model):
         on_delete=models.CASCADE,
         null=False, blank=False,
     )
+
+    def __str__(self):
+        return '{}_{}_{}'.format(
+            self.pk, self.status, self.card
+        )
 
 
 class Event(models.Model):
