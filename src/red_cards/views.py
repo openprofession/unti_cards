@@ -71,7 +71,7 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     issued_cards = Card.objects.filter(type=Card.TYPE_RED, leader_id=getattr(user, 'leader_id', 0),
-                                       status__name__in=(Status.NAME_ISSUED, Status.NAME_CONSIDERATION))
+                                       status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION])
     issued_cards = list(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
@@ -104,7 +104,7 @@ def home(request):
     # )
     # good_cards = list(good_cards)
     good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id', 0),
-                                     status__name__in=(Status.NAME_ISSUED, Status.NAME_CONSIDERATION))
+                                     status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION])
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)
