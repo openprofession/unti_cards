@@ -45,7 +45,7 @@
             </div>
 
             {% for card in issued_cards %}
-                {% with status = card.current_status %}
+                {{ card }} : {{ card.get_public_status }}
                     <div class="section-block__item">
                         <!--
             CARD: {{ status.card.uuid }}
@@ -117,7 +117,6 @@
                             </div>
                         </div>
                     </div>
-                {% endwith %}
             {% endfor %}
 
 
