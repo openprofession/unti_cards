@@ -38,7 +38,7 @@ def update_enrolls_data(event_uuid):
         for enroll in XLEApi().get_enrolls(event_uuid):
             print(enroll)
             unti_id = enroll.get('unti_id', '')
-            created_dt = dateutil.parser.parse(enroll.get('create_dt', ''))
+            created_dt = enroll.get('created_dt', '')
             e, e_created = EventEnroll.objects.update_or_create(event_uuid=event_uuid, unti_id=unti_id,
                                                                 defaults={'created_dt': created_dt})
     except ApiError:

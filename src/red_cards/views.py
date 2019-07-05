@@ -25,7 +25,6 @@ _sql_get_cards = """
         FROM red_cards_status as st2 
         WHERE st2.card_id = st.card_id
       )
-    {}
     ORDER BY st.change_dt
     ;
 """
