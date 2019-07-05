@@ -27,7 +27,7 @@ _sql_get_cards = """
 
 
 def home(request):
-    if (request.user.leader_id is None) or (request.user.leader_id == ''):
+    if request.user.is_active is False:
         url = reverse('social:begin', kwargs=dict(
             backend='unti'
         ))
@@ -69,7 +69,7 @@ def home(request):
     issued_cards = (
         s.card for s in statuses_bad
         if s.card.type == models.Card.TYPE_RED
-           and s.name == models.Status.NAME_ISSUED
+            and s.name == models.Status.NAME_ISSUED
     )
     issued_cards = list(issued_cards)
     max_issued_cards = 5
@@ -99,7 +99,7 @@ def home(request):
     good_cards = (
         s.card for s in statuses_good
         if s.card.type == models.Card.TYPE_GREEN
-           and s.name == models.Status.NAME_ISSUED
+            and s.name == models.Status.NAME_ISSUED
     )
     good_cards = list(good_cards)
 
@@ -123,7 +123,6 @@ def home(request):
         statuses_good=statuses_good,
         statuses_good_empty=statuses_good_empty,
     ))
-
 
 # ############################################################################ #
 
@@ -223,7 +222,7 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
         issued_cards = (
             s.card for s in red_statuses
             if s.card.type == models.Card.TYPE_RED
-               and s.name == models.Status.NAME_ISSUED
+                and s.name == models.Status.NAME_ISSUED
         )
         issued_cards = list(issued_cards)
         max_issued_cards = 5
@@ -261,6 +260,7 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
 
     def get_success_url(self):
         return reverse('card-add', kwargs=dict(leader_id=self.kwargs['leader_id']))
+
 
     """
 
