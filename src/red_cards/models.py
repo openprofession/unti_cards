@@ -254,14 +254,15 @@ class Card(models.Model):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
     def save(self, *args, **kwargs):
-        super(Card, self).save(*args, **kwargs)
-        status = Status.objects.create(
+
+        status = Status.objects.get_or_create(
             card=self,
             system=Status.SYSTEM_CARDS,
             name=Status.NAME_INITIATED,
             is_public=True,
         )
-        self.current_status = status
+        self.last_status = status
+        super(Card, self).save(*args, **kwargs)
 
     def get_status(self):
         return Status.objects.filter(
