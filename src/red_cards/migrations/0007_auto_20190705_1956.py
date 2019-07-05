@@ -12,11 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name='user',
-            name='leader_id',
-            field=models.CharField(blank=True, max_length=255, null=True, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='user',
             name='unti_id',
             field=models.PositiveIntegerField(blank=True, db_index=True, null=True, unique=True),
         ),
