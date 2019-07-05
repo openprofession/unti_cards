@@ -134,6 +134,12 @@ class Card(models.Model):
         null=True, blank=True,
     )
 
+    def get_public_status(self):
+        return Status.objects.filter(card=self, is_public=True).order_by('-change_dt')[0]
+
+    def get_status(self):
+        return Status.objects.filter(card=self, is_public=True).order_by('-change_dt')[0]
+
     def __str__(self):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
@@ -228,6 +234,8 @@ class Status(models.Model):
         verbose_name=_('is public'),
         default=False,
     )
+
+
 
     def save(self, *args, **kwargs):
         self.is_public = self.name not in self.PRIVATE_STATUSES

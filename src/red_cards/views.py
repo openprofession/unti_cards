@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
 from red_cards.api import XLEApi
-from red_cards.models import Event
+from red_cards.models import Event, Card
 from red_cards.utils import update_events_data, update_enrolls_data
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
@@ -40,37 +40,37 @@ def home(request):
     # published(карточка 2 на странице),
     # consideration(карточка 1),
     # issued(карточка 3)
-    statuses_bad = models.Status.objects.raw(_sql_get_cards.format(
-        getattr(user, 'leader_id', '0'),
-        '''
-            AND card.type IN ('{red}', '{yellow}')
-            AND 
-            (
-                (
-                    card.type= '{red}'
-                    AND
-                    st.name IN ('{published}', '{consideration}', '{issued}')
-                )OR(
-                    card.type= '{yellow}'
-                    AND
-                    st.name= '{issued}'
-                )
-            )
-        '''.format(
-            red=models.Card.TYPE_RED,
-            yellow=models.Card.TYPE_YELLOW,
+    # statuses_bad = models.Status.objects.raw(_sql_get_cards.format(
+    #    getattr(user, 'leader_id', '0'),
+    #    '''
+    #        AND card.type IN ('{red}', '{yellow}')
+    #        AND
+    #        (
+    #            (
+    #                card.type= '{red}'
+    #                AND
+    #                st.name IN ('{published}', '{consideration}', '{issued}')
+    #            )OR(
+    #                card.type= '{yellow}'
+    #                AND
+    #                st.name= '{issued}'
+    #            )
+    #        )
+    #    '''.format(
+    #        red=models.Card.TYPE_RED,
+    #        yellow=models.Card.TYPE_YELLOW,
+    #        published=models.Status.NAME_PUBLISHED,
+    #        consideration=models.Status.NAME_CONSIDERATION,
+    #        issued=models.Status.NAME_ISSUED,
+    #    )
+    # ))
 
-            published=models.Status.NAME_PUBLISHED,
-            consideration=models.Status.NAME_CONSIDERATION,
-            issued=models.Status.NAME_ISSUED,
-        )
-    ))
-
-    issued_cards = (
-        s.card for s in statuses_bad
-        if s.card.type == models.Card.TYPE_RED
-            and s.name == models.Status.NAME_ISSUED
-    )
+    # issued_cards = (
+    #    s.card for s in statuses_bad
+    #    if s.card.type == models.Card.TYPE_RED
+    #       and s.name == models.Status.NAME_ISSUED
+    # )
+    issued_cards = Card.objects.filter(type=Card.TYPE_RED)
     issued_cards = list(issued_cards)
     max_issued_cards = 5
     issued_cards_empty_cunt = max_issued_cards - len(issued_cards)
@@ -85,24 +85,24 @@ def home(request):
     # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #
-    statuses_good = models.Status.objects.raw(_sql_get_cards.format(
-        getattr(user, 'leader_id', '0'),
-        '''
-            AND card.type = '{green}'
-            AND st.name = '{issued}'
-        '''.format(
-            green=models.Card.TYPE_GREEN,
-            issued=models.Status.NAME_ISSUED,
-        )
-    ))
+    # statuses_good = models.Status.objects.raw(_sql_get_cards.format(
+    #    getattr(user, 'leader_id', '0'),
+    #    '''
+    #        AND card.type = '{green}'
+    #        AND st.name = '{issued}'
+    #    '''.format(
+    #        green=models.Card.TYPE_GREEN,
+    #        issued=models.Status.NAME_ISSUED,
+    #    )
+    # ))
 
-    good_cards = (
-        s.card for s in statuses_good
-        if s.card.type == models.Card.TYPE_GREEN
-            and s.name == models.Status.NAME_ISSUED
-    )
-    good_cards = list(good_cards)
-
+    # good_cards = (
+    #    s.card for s in statuses_good
+    #    if s.card.type == models.Card.TYPE_GREEN
+    #       and s.name == models.Status.NAME_ISSUED
+    # )
+    # good_cards = list(good_cards)
+    good_cards = Card.objects.filter(type=Card.TYPE_GREEN)
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)
@@ -116,13 +116,14 @@ def home(request):
 
     # ------------------------------------------------------------------------ #
     return render(request, template_name="home.html", context=dict(
-        statuses_bad=statuses_bad,
+        #statuses_bad=statuses_bad,
         issued_cards=issued_cards,
         issued_cards_empty=issued_cards_empty,
 
-        statuses_good=statuses_good,
+        #statuses_good=statuses_good,
         statuses_good_empty=statuses_good_empty,
     ))
+
 
 # ############################################################################ #
 
@@ -222,7 +223,7 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
         issued_cards = (
             s.card for s in red_statuses
             if s.card.type == models.Card.TYPE_RED
-                and s.name == models.Status.NAME_ISSUED
+               and s.name == models.Status.NAME_ISSUED
         )
         issued_cards = list(issued_cards)
         max_issued_cards = 5
@@ -260,7 +261,6 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
 
     def get_success_url(self):
         return reverse('card-add', kwargs=dict(leader_id=self.kwargs['leader_id']))
-
 
     """
 
