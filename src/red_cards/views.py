@@ -102,7 +102,7 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     # good_cards = list(good_cards)
-    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=user.leader_id)
+    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id', ''))
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)
