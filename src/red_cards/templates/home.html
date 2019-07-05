@@ -45,7 +45,7 @@
             </div>
 
             {% for card in issued_cards %}
-                {{ card }} : {{ card.get_public_status }}
+  {% comment %}              {{ card }} : {{ card.get_public_status }}{% endcomment %}
                     <div class="section-block__item">
                         <!--
             CARD: {{ status.card.uuid }}
@@ -58,16 +58,16 @@
                             <div class="col-lg-9 col-md-8">
                                 <div class="user-event">
                                     <div class="user-event__status">
-                                        {% if status.name == status.NAME_CONSIDERATION %}
+                                        {% if card.current_status.name == status.NAME_CONSIDERATION %}
                                             Инцидент оспорен и рассматривается модератором
                                         {% endif %}
                                     </div>
                                     <h3 class="user-event__title" style="">
-                                        {{ status.card.reason }}
-                                        {{ status.card.incident_dt|date:"d.m.Y" }}
+                                        {{ card.reason }}
+                                        {{ card.incident_dt|date:"d.m.Y" }}
                                     </h3>
                                     <div class="user-event__date">
-                                        зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
+                                        зафиксировано {{ card.current_status.incident_dt|date:"d.m.Y" }}</div>
                                     <p class="user-event__text">
                                         {{ status.card.description }}
                                     </p>
@@ -75,19 +75,19 @@
                                 <div class="card-type">
                                     Тип:
                                     <span
-                                            {% if status.card.type == status.card.TYPE_RED %}
+                                            {% if card.type == card.TYPE_RED %}
                                                 class="color--red"
-                                            {% elif status.card.type == status.card.TYPE_YELLOW %}
+                                            {% elif card.type == card.TYPE_YELLOW %}
                                                 class="color--yellow"
                                             {% else %}
                                                 class="color--blue"
                                             {% endif %}
-                                    >{{ status.card.type_verbose }}</span>
+                                    >{{ card.type_verbose }}</span>
                                 </div>
                             </div>
                             <div class="col-lg-3 col-md-4">
                                 <div class="event-panel">
-                                    {% if status.name == status.NAME_PUBLISHED %}
+                                    {% if card.current_status.name == status.NAME_PUBLISHED %}
                                         <div class="event-panel__item">
                                             <a class="btn btn-outline-primary" href="challenge.html">Оспорить</a>
                                         </div>
@@ -98,13 +98,13 @@
                                             </div>
                                         </div>
                                     {% endif %}
-                                    {% if status.name == status.NAME_CONSIDERATION %}
+                                    {% if card.current_status.name == status.NAME_CONSIDERATION %}
                                         <div class="event-panel__item">
                                             <p class="timer-out">Запрос на рассмотрении.</p>
                                         </div>
                                     {% endif %}
 
-                                    {% if status.card.type == status.card.TYPE_YELLOW %}
+                                    {% if card.current_status.card.type == card.TYPE_YELLOW %}
                                         <div class="event-panel__item">
                                             <p class="event-notice-text">При получении второй желтой карточки вы
                                                 автоматически получите красную. В ином случае желтая карточка
