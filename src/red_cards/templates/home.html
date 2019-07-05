@@ -65,7 +65,7 @@
                       {{ status.card.reason }}
                       {{ status.card.incident_dt|date:"d.m.Y" }}
                   </h3>
-                  <div class="user-event__date">зафиксировано {{ status.incident_dt|date:"d.m.Y" }}</div>
+                  <div class="user-event__date">зафиксировано {{ status.change_dt|date:"d.m.Y" }}</div>
                   <p class="user-event__text">
                       {{ status.card.description }}
                   </p>
@@ -87,7 +87,8 @@
                 <div class="event-panel">
                 {% if status.name == status.NAME_PUBLISHED %}
                   <div class="event-panel__item">
-                      <a class="btn btn-outline-primary" href="challenge.html">Оспорить</a>
+                      <a class="btn btn-outline-primary"
+                         href="{% url 'challenge' %}?user={{ request.user.leader_id }}&card={{ status.card.uuid }}">Оспорить</a>
                   </div>
                     <div class="event-panel__item">
                         <div class="timer">

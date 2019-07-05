@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<div class="container">
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Оспаривание инцидента</li>
+  </ol>
+</nav>
+
+<h1 class="section-title">Оспаривание инцидента</h1>
+<div class="section-block event-block">
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-9">
+
+                <div class="user-name">
+                  <div class="user-name__value">{{ request.user.get_full_name }}</div>
+                    <span class="user-name__id user-id">ID {{ request.user.leader_id }}</span>
+                </div>
+      </div>
+      <div class="col-md-3">
+        <div class="user-status">
+          <ul class="status-indicator">
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle circle-orange"></span></li>
+            <li><span class="circle"></span></li>
+            <li><span class="circle"></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-9">
+        <div class="user-event">
+
+              <h3 class="user-event__title" style="">
+                  {{ card.reason }}
+                  {{ card.incident_dt|date:"d.m.Y" }}
+              </h3>
+              <div class="user-event__date">зафиксировано {{ status.change_dt|date:"d.m.Y" }}</div>
+              <p class="user-event__text">
+                  {{ card.get_status.description }}
+              </p>
+
+          <p class="user-event__text">В случае, если вы не согласны с решением модератора, вам дается право оспорить его в течении 16 часов после фиксации инцидента</p>
+        </div>
+      </div>
+    </div>
+    <form class="form-event" action="#" method="post">
+      <div class="form-group">
+        <textarea class="form-control form-textarea" rows="3" placeholder="Опишите, что произошло и почему вы не согласны..."></textarea>
+      </div>
+      <div class="form-group">
+        <div class="custom-file">
+          <input class="custom-file-input" id="file" type="file">
+          <label class="custom-file-label" for="file">Выберите файл</label>
+        </div>
+      </div>
+      <div class="form-button align--center">
+        <button class="btn btn-primary" type="submit">Отправить</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+{% endblock %}

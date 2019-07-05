@@ -11,6 +11,7 @@ from . import models
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.http import Http404, HttpResponseForbidden
 
 from django.views.generic import FormView
 from django import forms
@@ -190,6 +191,23 @@ class AddCardForm(forms.Form):
             incident_dt=self.cleaned_data.get('date'),
             leader_id=self.cleaned_data.get('leader_id'),
         )
+        if obj.type == models.Card.TYPE_RED:
+            status = models.Status.NAME_PUBLISHED
+        elif obj.type in (
+            models.Card.TYPE_YELLOW,
+            models.Card.TYPE_GREEN,
+        ):
+            status = models.Status.NAME_ISSUED
+        else:
+            status = models.Status.NAME_INITIATED
+        #
+        new_status = models.Status.objects.create(
+            card=obj,
+            system=models.Status.SYSTEM_LEADER,
+            name=status,
+        )
+        #
+
         return obj
 
 
@@ -262,37 +280,6 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
         return reverse('card-add', kwargs=dict(leader_id=self.kwargs['leader_id']))
 
 
-    """
-
-
-    Экран 2
-(!) 2с - Выберите событие - удаляем поле из шаблона
-http://test2.x-webdev.info/selected-form.html
-
-
-Шапка карточки  - Фамилия Имя выбранного студента, его leader_id, email, кружочками - количество красных карточек студента в статусе issued
-
-Ассистент заполняет форму на создание карточки:
-
-Заголовок: reason (обязательное)
-
-Аудитория: выпадающий список аудиторий (пример формата D2) c поиском, будет список аудиторий смапленный с placeID (порядка 70)
-
-Выберите событие - удаляем поле из шаблона
-
-Выберите дату + добавить время : incident_dt (обязательно)
-
-Введите описание: description
-
-Radio с типом карточки: type (обязательно)
-
-source: assistant
-
-После нажатия Выдать карточку в базе у соответствующего пользователя создается красная карточка в статусе published или желтая/зеленая карточка в статусе issued, ассистенту выпадает подтверждение об успешном создании карточки
-
-
-    """
-
 
 def api_test(request, date_txt):
     update_events_data(date_txt)
@@ -304,3 +291,44 @@ def api_test2(request):
     for event in all_events:
         update_enrolls_data(event_uuid=event.uuid)
     return HttpResponse("OK!")
+
+
+class ChallengeForm(forms.Form):
+    """
+
+    """
+
+
+class ArgsChallengeForm(forms.Form):
+    # user = forms.ChoiceField(required=True)
+    card = forms.UUIDField(required=True)
+
+
+class ChallengeFormView(LoginRequiredMixin, FormView):
+    template_name = 'challenge.html'
+    form_class = ChallengeForm
+
+    def get_context_data(self, **kwargs):
+        context = super(ChallengeFormView, self).get_context_data(**kwargs)
+
+        # ------------------------------------------------------------ #
+        params = ArgsChallengeForm(self.request.GET)
+        if not params.is_valid():
+            raise Http404
+        #
+        params = params.cleaned_data
+        card = models.Card.objects.get(uuid=params['card'])
+        if self.request.user.leader_id != card.leader_id:
+            # only own car can be challenge
+            raise HttpResponseForbidden
+        #
+        # ------------------------------------------------------------ #
+        context.update({
+            'card': card,
+        })
+
+        return context
+
+    def get_success_url(self):
+        return reverse('home')
+

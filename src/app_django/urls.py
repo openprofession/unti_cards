@@ -37,5 +37,10 @@ urlpatterns = [
         views.AddCardAdminFormView.as_view(),
         name='card-add'
     ),
+    path(
+        'challenge',
+        views.ChallengeFormView.as_view(),
+        name='challenge'
+    ),
     *staticfiles_urlpatterns(),
 ]
