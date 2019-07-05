@@ -5,7 +5,7 @@ from django.urls import reverse
 from red_cards.api import XLEApi
 from red_cards.models import Event, Card, Status
 from red_cards.utils import update_events_data, update_enrolls_data
-from django.db.models import Count
+from django.db.models import Count, Max, F
 from django.utils.translation import ugettext_lazy as _
 from . import models
 from django.contrib.auth.decorators import login_required, permission_required
@@ -103,9 +103,11 @@ def home(request):
     #       and s.name == models.Status.NAME_ISSUED
     # )
     # good_cards = list(good_cards)
-    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id') or 1,
-                                     status__name__in=[Status.NAME_ISSUED, Status.NAME_CONSIDERATION,
-                                                       Status.NAME_PUBLISHED])
+    good_cards = Card.objects.filter(type=Card.TYPE_GREEN, leader_id=getattr(user, 'leader_id') or 1).annotate(
+        max_date=Max('status__change_dt')
+    ).filter(
+        date=F('max_date')
+    )
     statuses_good_empty = []
     _max_cards = 5
     statuses_good_empty_count = _max_cards - len(good_cards)

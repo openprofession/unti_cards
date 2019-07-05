@@ -133,10 +133,11 @@ class Card(models.Model):
         max_length=255,
         null=True, blank=True,
     )
-
+    @property
     def get_public_status(self):
         return Status.objects.filter(card=self, is_public=True).order_by('-change_dt')[0]
 
+    @property
     def get_status(self):
         return Status.objects.filter(card=self, is_public=True).order_by('-change_dt')[0]
 
