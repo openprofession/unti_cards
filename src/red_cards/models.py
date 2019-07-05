@@ -33,7 +33,6 @@ class User(AbstractUser):
         max_length=255,
         null=True,
         blank=True,
-        unique=True,
     )
 
     # leader_id = models.IntegerField(  # todo: set leader_id as IntegerField
