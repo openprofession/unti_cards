@@ -15,7 +15,7 @@
                     {% if request.user.is_authenticated %}
                         <div class="header-links-grid__item">{{ request.user.get_full_name }}</div>
                         <div class="header-links-grid__item">
-                            <a class="navbar-red nav-link" href="{% url 'logout' %}"
+                            <a class="navbar-red nav-link" href="{% url 'logout' %}?next=/"
                                title="Выйти">
                                 <i class="fa fa-sign-out"
                                    title="Выйти"></i>
