@@ -28,7 +28,7 @@ _sql_get_cards = """
 
 
 def logout(request):
-    return base_logout(request)
+    return base_logout(request, 'https://now.2035.university')
 
 
 def home(request):
