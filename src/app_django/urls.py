@@ -24,13 +24,13 @@ from red_cards import views
 
 urlpatterns = [
     path('', include('social_django.urls', namespace='social')),
+    path('logout/', views.logout, name='logout'),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api-docs/', include_docs_urls(title='DRF: API-docs')),
     path('api/', include(router.urls)),
     path('manage/load_events/<date_txt>', views.api_test),
     path('manage/load_enrolls', views.api_test2),
-    path('', views.home),
     path('', views.home, name='home'),
     path(
         'card/add/<str:leader_id>',

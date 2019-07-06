@@ -8,7 +8,7 @@ from red_cards.utils import update_events_data, update_enrolls_data
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from . import models
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.views import logout_then_login as base_logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
@@ -25,6 +25,10 @@ _sql_get_cards = """
     {}
     ORDER BY st.change_dt
 """
+
+
+def logout(request):
+    return base_logout(request)
 
 
 def home(request):

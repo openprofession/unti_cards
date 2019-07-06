@@ -10,9 +10,23 @@
             </div>
             <div class="col-lg-8 col-md-7 col-6">
                 <div class="header-links-grid">
+
                     <div class="header-links-grid__item"><a class="header-link" href="#">Помощь</a></div>
-                    <div class="header-links-grid__item"><a class="header-link avatar-user" href="#"><img
-                            src="/static/img/user.png" alt="" class="opacity-50"></a></div>
+                    {% if request.user.is_authenticated %}
+                        <div class="header-links-grid__item">{{ request.user.get_full_name }}</div>
+                        <div class="header-links-grid__item">
+                            <a class="navbar-red nav-link" href="{% url 'logout' %}"
+                               title="Выйти">
+                                <i class="fa fa-sign-out"
+                                   title="Выйти"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="header-links-grid__item">
+                            <a class="" href="{% url 'social:begin' backend='unti' %}?next={{ request.path }}">
+                                Войти </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
