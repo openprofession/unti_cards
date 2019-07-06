@@ -116,7 +116,7 @@ class UNTIBackend(BaseOAuth2):
             params={'access_token': access_token},
             headers={'Authorization': 'Bearer {}'.format(access_token)},
         )
-        result['leader_id'] = int(result['leader_id'])
+        result['leader_id'] = result['leader_id']
         result['first_name'] = result.pop('firstname')
         result['last_name'] = result.pop('lastname')
         return result

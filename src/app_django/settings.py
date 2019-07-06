@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
+print('The .env file has been loaded. See base.py for more information')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -105,10 +110,10 @@ REST_FRAMEWORK = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("MYSQL_DATABASE"),
-        'USER': os.getenv("MYSQL_USER"),
-        'PASSWORD': os.getenv("MYSQL_PASSWORD"),
-        'HOST': os.getenv("DB_NAME"),
+        'NAME': env("MYSQL_DATABASE"),
+        'USER': env("MYSQL_USER"),
+        'PASSWORD': env("MYSQL_PASSWORD"),
+        'HOST': env("DB_NAME"),
         'PORT': 3306,
         'OPTIONS': {'charset': 'utf8'},
     }
@@ -171,12 +176,12 @@ USER_FIELDS = (
     'leader_id',
 )
 
-SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
-SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
-SOCIAL_AUTH_UNTI_SECRET = os.getenv("SOCIAL_AUTH_UNTI_SECRET")
-SOCIAL_AUTH_UNTI_REDIRECT_URL = os.getenv("SOCIAL_AUTH_UNTI_REDIRECT_URL")
+SSO_UNTI_URL = env("SSO_UNTI_URL")
+SOCIAL_AUTH_UNTI_KEY = env("SOCIAL_AUTH_UNTI_KEY")
+SOCIAL_AUTH_UNTI_SECRET = env("SOCIAL_AUTH_UNTI_SECRET")
+SOCIAL_AUTH_UNTI_REDIRECT_URL = env("SOCIAL_AUTH_UNTI_REDIRECT_URL")
 
-LOGOUT_REDIRECT = os.getenv("LOGOUT_REDIRECT", "https://now.2035.university")
+LOGOUT_REDIRECT = env("LOGOUT_REDIRECT", default="https://now.2035.university")
 
 AUTHENTICATION_BACKENDS = (
     'app_django.auth.UNTIBackend',
