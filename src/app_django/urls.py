@@ -42,5 +42,6 @@ urlpatterns = [
         views.ChallengeFormView.as_view(),
         name='challenge'
     ),
+    path('challenge/success', views.challenge_ready, name='challenge_ready'),
     *staticfiles_urlpatterns(),
 ]

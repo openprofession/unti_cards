@@ -44,28 +44,33 @@
                   {{ card.reason }}
                   {{ card.incident_dt|date:"d.m.Y" }}
               </h3>
-              <div class="user-event__date">зафиксировано {{ status.change_dt|date:"d.m.Y" }}</div>
+              <div class="user-event__date">зафиксировано {{ card.get_status.change_dt|date:"d.m.Y" }}</div>
               <p class="user-event__text">
-                  {{ card.get_status.description }}
+                  {{ card.description }}
               </p>
 
           <p class="user-event__text">В случае, если вы не согласны с решением модератора, вам дается право оспорить его в течении 16 часов после фиксации инцидента</p>
         </div>
       </div>
     </div>
-    <form class="form-event" action="#" method="post">
+    <form  enctype="multipart/form-data" class="form-event" action="" method="POST">
+        {% csrf_token %}
+
       <div class="form-group">
-        <textarea class="form-control form-textarea" rows="3" placeholder="Опишите, что произошло и почему вы не согласны..."></textarea>
+          {{ form.description|attr:"class:form-control form-textarea"  }}
       </div>
       <div class="form-group">
         <div class="custom-file">
-          <input class="custom-file-input" id="file" type="file">
-          <label class="custom-file-label" for="file">Выберите файл</label>
+          {{ form.file|attr:"class:custom-file-input" }}
+
+          {{ form.file|add_label_class:"custom-file-label" }}
+
         </div>
       </div>
       <div class="form-button align--center">
         <button class="btn btn-primary" type="submit">Отправить</button>
       </div>
+        {{ form.card }}
     </form>
   </div>
 </div>

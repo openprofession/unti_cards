@@ -102,3 +102,14 @@ class EventEnrollAdmin(admin.ModelAdmin):
         'created_at',
         'updated_at'
     )
+
+
+@reg_admin_model(models.Appeal)
+class AppealAdmin(admin.ModelAdmin):
+    list_display = (
+        'description',
+        'file',
+        'create_dt',
+        'status',
+        'card',
+    )

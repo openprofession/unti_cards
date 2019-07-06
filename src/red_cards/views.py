@@ -284,7 +284,6 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
         return reverse('card-add', kwargs=dict(leader_id=self.kwargs['leader_id']))
 
 
-
 def api_test(request, date_txt):
     update_events_data(date_txt)
     return HttpResponse("OK!")
@@ -301,6 +300,41 @@ class ChallengeForm(forms.Form):
     """
 
     """
+
+    description = forms.CharField(
+        label=_('Введите описание'),
+        label_suffix='',
+        widget=forms.Textarea(attrs={
+            'placeholder': _('Опишите, что произошло и почему вы не согласны...'),
+        }),
+        required=True,
+    )
+    file = forms.FileField(
+        label=_('Выберите файл'),
+        label_suffix='',
+        widget=forms.FileInput(),
+        required=False
+    )
+    card = forms.CharField(
+        widget=forms.HiddenInput,
+    )
+
+    def save(self):
+        # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
+        # https://stackoverflow.com/questions/1718429/file-does-not-upload-from-web-form-in-django
+        card = models.Card.objects.get(uuid=self.cleaned_data.get('card'))
+        new_appel = models.Appeal.objects.create(
+            description=self.cleaned_data.get('description'),
+            status=models.Appeal.STATUS_NEW,
+            card=card,
+            file=self.cleaned_data.get('file'),
+        )
+        new_status = models.Status.objects.create(
+            card=card,
+            name=models.Status.NAME_CONSIDERATION,
+            system=models.Status.SYSTEM_LEADER,
+        )
+        return new_appel
 
 
 class ArgsChallengeForm(forms.Form):
@@ -322,10 +356,18 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
         #
         params = params.cleaned_data
         card = models.Card.objects.get(uuid=params['card'])
-        if self.request.user.leader_id != card.leader_id:
+        status = card.get_status()
+        assert isinstance(status, models.Status)
+        if status.name != status.NAME_PUBLISHED:
+            raise HttpResponseForbidden
+        #
+        if int(self.request.user.leader_id) != int(card.leader_id):
             # only own car can be challenge
             raise HttpResponseForbidden
         #
+        # ------------------------------------------------------------ #
+        form = context['form']
+        form.fields['card'].initial = card.uuid
         # ------------------------------------------------------------ #
         context.update({
             'card': card,
@@ -333,6 +375,24 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
 
         return context
 
-    def get_success_url(self):
-        return reverse('home')
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
 
+            appeal = form.save()
+            assert isinstance(appeal, models.Appeal)
+            # messages.success(
+            #     request, 'Апеляция успешно добавлена {}'.format(appeal)
+            # )
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+        #
+
+    def get_success_url(self):
+        return reverse('challenge_ready')
+
+
+def challenge_ready(request):  # ChallengeFormView
+    return render(request, template_name="challenge-accepted.html", )
