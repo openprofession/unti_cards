@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
+from app_django.settings import LOGOUT_REDIRECT
 from red_cards.api import XLEApi
 from red_cards.models import Event
 from red_cards.utils import update_events_data, update_enrolls_data
@@ -28,7 +29,7 @@ _sql_get_cards = """
 
 
 def logout(request):
-    return base_logout(request, 'https://now.2035.university')
+    return base_logout(request, LOGOUT_REDIRECT)
 
 
 def home(request):
@@ -74,7 +75,7 @@ def home(request):
     issued_cards = (
         s.card for s in statuses_bad
         if s.card.type == models.Card.TYPE_RED
-            and s.name == models.Status.NAME_ISSUED
+           and s.name == models.Status.NAME_ISSUED
     )
     issued_cards = list(issued_cards)
     max_issued_cards = 5
@@ -104,7 +105,7 @@ def home(request):
     good_cards = (
         s.card for s in statuses_good
         if s.card.type == models.Card.TYPE_GREEN
-            and s.name == models.Status.NAME_ISSUED
+           and s.name == models.Status.NAME_ISSUED
     )
     good_cards = list(good_cards)
 
@@ -128,6 +129,7 @@ def home(request):
         statuses_good=statuses_good,
         statuses_good_empty=statuses_good_empty,
     ))
+
 
 # ############################################################################ #
 
@@ -198,8 +200,8 @@ class AddCardForm(forms.Form):
         if obj.type == models.Card.TYPE_RED:
             status = models.Status.NAME_PUBLISHED
         elif obj.type in (
-            models.Card.TYPE_YELLOW,
-            models.Card.TYPE_GREEN,
+                models.Card.TYPE_YELLOW,
+                models.Card.TYPE_GREEN,
         ):
             status = models.Status.NAME_ISSUED
         else:
@@ -244,7 +246,7 @@ class AddCardAdminFormView(LoginRequiredMixin, FormView):
         issued_cards = (
             s.card for s in red_statuses
             if s.card.type == models.Card.TYPE_RED
-                and s.name == models.Status.NAME_ISSUED
+               and s.name == models.Status.NAME_ISSUED
         )
         issued_cards = list(issued_cards)
         max_issued_cards = 5

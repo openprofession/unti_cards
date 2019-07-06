@@ -59,7 +59,6 @@ MIDDLEWARE = [
     'app_django.middleware.CustomSocialAuthMiddleware',
 ]
 
-
 ROOT_URLCONF = 'app_django.urls'
 
 TEMPLATES = [
@@ -172,11 +171,12 @@ USER_FIELDS = (
     'leader_id',
 )
 
-
 SSO_UNTI_URL = os.getenv("SSO_UNTI_URL")
 
 SOCIAL_AUTH_UNTI_KEY = os.getenv("SOCIAL_AUTH_UNTI_KEY")
 SOCIAL_AUTH_UNTI_SECRET = os.getenv("SOCIAL_AUTH_UNTI_SECRET")
+
+LOGOUT_REDIRECT = os.getenv("LOGOUT_REDIRECT", "https://now.2035.university")
 
 AUTHENTICATION_BACKENDS = (
     'app_django.auth.UNTIBackend',
@@ -194,9 +194,9 @@ XLE_TOKEN = 'd1veitls2akofd5q'
 XLE_CONTEXT = 'island1022-demo'
 
 from django.urls import reverse_lazy
-LOGIN_URL = reverse_lazy('social:begin', kwargs=dict(
-            backend='unti'
-        ))
+
+LOGIN_URL = reverse_lazy('social:begin', kwargs=dict(backend='unti'))
+
 FILE_UPLOAD_HANDLERS = (
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
