@@ -14,7 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 from django import forms
 
 _sql_get_cards = """
@@ -398,3 +398,61 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
 
 def challenge_ready(request):  # ChallengeFormView
     return render(request, template_name="challenge-accepted.html", )
+
+
+class AppealListFormView(LoginRequiredMixin, TemplateView):
+    template_name = 'request.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AppealListFormView, self).get_context_data(**kwargs)
+        appeals = models.Appeal.objects.all().order_by(
+            '-create_dt'
+        )
+        context.update({
+            'appeals': appeals,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        appeal_id = self.request.POST.get('appeal')
+        appeal = models.Appeal.objects.filter(pk=appeal_id).first()
+        if not appeal:
+            messages.error(
+                request, 'Заявка не найденна в базе данных.'
+            )
+            return self.get(request, *args, **kwargs)
+        #
+        if appeal.status in (
+            appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
+        ):
+            messages.error(
+                request, 'Данная заявка закрыта.'
+            )
+            return self.get(request, *args, **kwargs)
+        #
+        action = self.request.POST.get('action')
+        if action == 'assign':
+            appeal.executive = request.user
+            appeal.date_assign = models.timezone.now()
+            appeal.save()
+
+            messages.success(
+                request, 'Заявка успешно оформлена на {}'.format(
+                    request.user.get_full_name()
+                )
+            )
+        elif action == 'free':
+            appeal.executive = None
+            appeal.date_assign = None
+            appeal.save()
+
+            messages.success(
+                request, '{} теперь больше не расматривает заявку.'.format(
+                    request.user.get_full_name()
+                )
+            )
+        else:
+            return self.get(request, *args, **kwargs)
+        #
+
+        return self.get(request, *args, **kwargs)

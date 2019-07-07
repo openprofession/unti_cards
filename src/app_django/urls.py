@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls.static import static
+from django.conf import settings
 
 from app_django import settings
 from app_django.routers import router
@@ -24,7 +25,13 @@ from rest_framework.documentation import include_docs_urls
 
 from red_cards import views
 
-urlpatterns = [
+urlpatterns = []
+if settings.DEBUG:
+    # without collect static
+    urlpatterns += staticfiles_urlpatterns()
+#
+
+urlpatterns += [
                   path('', include('social_django.urls', namespace='social')),
                   path('logout/', views.logout, name='logout'),
                   path('admin/', admin.site.urls),
@@ -45,6 +52,7 @@ urlpatterns = [
                       name='challenge'
                   ),
                   path('challenge/success', views.challenge_ready, name='challenge_ready'),
+                  path('appeals', views.AppealListFormView.as_view(), name='appeal_list'),
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

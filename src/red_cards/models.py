@@ -4,6 +4,8 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import uuid
 from django.db.models import Count
+from django.utils import timezone
+from app_django.tools import print_seconds
 
 # User = get_user_model()
 
@@ -269,6 +271,11 @@ class Card(models.Model):
             '-change_dt'
         ).first()
 
+    def get_user(self):
+        return User.objects.filter(
+            leader_id=self.leader_id,
+        ).first()
+
 
 class ClassRum(models.Model):
     uuid = models.UUIDField(
@@ -312,10 +319,12 @@ class Appeal(models.Model):
     )
 
     STATUS_NEW = "new"
+    STATUS_IN_WORK = "in_work"
     STATUS_APPROVED = "approved"
     STATUS_REJECTED = "rejected"
     STATUS_CHOICES = (
         (STATUS_NEW, _("New")),
+        (STATUS_IN_WORK, _("In work")),
         (STATUS_APPROVED, _("Approved")),
         (STATUS_REJECTED, _("Rejected")),
     )
@@ -326,6 +335,24 @@ class Appeal(models.Model):
         null=False, blank=False,
         default=STATUS_NEW,
     )
+
+    executive = models.ForeignKey(      # юзер который взял заявку в работу
+        User,
+        verbose_name=_('Executive'),
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+    )
+    date_assign = models.DateTimeField(
+        # дата и время, когда обновился Исполнитель
+        verbose_name=_('date assign to executive'),
+        null=True, blank=True,
+    )
+    date_finished = models.DateTimeField(
+        # дата и время, когда заявка перешла в статус Одобрена/Отклоненаль
+        verbose_name=_('date finished'),
+        null=True, blank=True,
+    )
+
     card = models.ForeignKey(
         Card,
         verbose_name=_('card'),
@@ -333,9 +360,31 @@ class Appeal(models.Model):
         null=False, blank=False,
     )
 
+    def save(self, *args, **kwargs):
+        if not self.date_finished:
+            if self.status in (
+                self.STATUS_APPROVED,
+                self.STATUS_REJECTED
+            ):
+                self.date_finished = timezone.now()
+        #   #
+
+        return super(Appeal, self).save(*args, **kwargs)
+
     def __str__(self):
         return '{}_{}_{}'.format(
             self.pk, self.status, self.card
+        )
+
+    def time_for_complete(self):
+        _time = (self.create_dt + timezone.timedelta(hours=2)) \
+                - timezone.now()
+        return _time.total_seconds()
+
+    def time_for_complete_text(self):
+        return print_seconds(
+            self.time_for_complete(),
+            '%Hh %Mm'
         )
 
 

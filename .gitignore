@@ -8,3 +8,5 @@ _jen
 db.sqlite3
 
 media
+
+.env
