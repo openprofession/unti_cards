@@ -307,7 +307,6 @@ def api_test2(request):
 
 class BaseAppealsView(
     LoginRequiredMixin,
-    PermissionRequiredMixin,
     TemplateView,
 ):
     """   """
@@ -472,7 +471,7 @@ class ExecutiveMixin:
         return self.get(request, *args, **kwargs)
 
 
-class AppealListView(ExecutiveMixin, BaseAppealsView):
+class AppealListView(ExecutiveMixin, BaseAppealsView, PermissionRequiredMixin):
     template_name = 'red_cards/appeal_list.html'
 
     permission_required = (
@@ -505,7 +504,7 @@ class ArgsAppealDetailAdminView(forms.Form):
         ).first()
 
 
-class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView):
+class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredMixin):
     template_name = 'red_cards/appeal_detail_admin.html'
 
     permission_required = (
