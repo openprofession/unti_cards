@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls.static import static
 
+from app_django import settings
 from app_django.routers import router
 from rest_framework.documentation import include_docs_urls
 
