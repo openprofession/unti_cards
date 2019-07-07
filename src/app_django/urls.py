@@ -23,25 +23,26 @@ from rest_framework.documentation import include_docs_urls
 from red_cards import views
 
 urlpatterns = [
-    path('', include('social_django.urls', namespace='social')),
-    path('logout/', views.logout, name='logout'),
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    path('api-docs/', include_docs_urls(title='DRF: API-docs')),
-    path('api/', include(router.urls)),
-    path('manage/load_events/<date_txt>', views.api_test),
-    path('manage/load_enrolls', views.api_test2),
-    path('', views.home, name='home'),
-    path(
-        'card/add/<str:leader_id>',
-        views.AddCardAdminFormView.as_view(),
-        name='card-add'
-    ),
-    path(
-        'challenge',
-        views.ChallengeFormView.as_view(),
-        name='challenge'
-    ),
-    path('challenge/success', views.challenge_ready, name='challenge_ready'),
-    *staticfiles_urlpatterns(),
-]
+                  path('', include('social_django.urls', namespace='social')),
+                  path('logout/', views.logout, name='logout'),
+                  path('admin/', admin.site.urls),
+                  path('api-auth/', include('rest_framework.urls')),
+                  path('api-docs/', include_docs_urls(title='DRF: API-docs')),
+                  path('api/', include(router.urls)),
+                  path('manage/load_events/<date_txt>', views.api_test),
+                  path('manage/load_enrolls', views.api_test2),
+                  path('', views.home, name='home'),
+                  path(
+                      'card/add/<str:leader_id>',
+                      views.AddCardAdminFormView.as_view(),
+                      name='card-add'
+                  ),
+                  path(
+                      'challenge',
+                      views.ChallengeFormView.as_view(),
+                      name='challenge'
+                  ),
+                  path('challenge/success', views.challenge_ready, name='challenge_ready'),
+
+              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
+              static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
