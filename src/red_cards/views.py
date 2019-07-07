@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from . import models
 from django.contrib.auth.views import logout_then_login as base_logout
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 
@@ -219,7 +219,10 @@ class AddCardForm(forms.Form):
         return obj
 
 
-class AddCardAdminFormView(LoginRequiredMixin, FormView):
+class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView):
+    permission_required = (
+        'is_staff',
+    )
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
@@ -304,9 +307,11 @@ def api_test2(request):
 
 class BaseAppealsView(
     LoginRequiredMixin,
+    PermissionRequiredMixin,
     TemplateView,
 ):
     """   """
+
 
 
 class AppealForm(forms.Form):
@@ -470,6 +475,10 @@ class ExecutiveMixin:
 class AppealListView(ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_list.html'
 
+    permission_required = (
+        'is_staff',
+    )
+
     def get_context_data(self, **kwargs):
         context = super(AppealListView, self).get_context_data(**kwargs)
         appeals = models.Appeal.objects.all().order_by(
@@ -498,6 +507,10 @@ class ArgsAppealDetailAdminView(forms.Form):
 
 class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_detail_admin.html'
+
+    permission_required = (
+        'is_staff',
+    )
 
     def get_context_data(self, **kwargs):
         context = super(AppealDetailAdminView, self).get_context_data(**kwargs)
