@@ -41,7 +41,9 @@
     {% for appeal in appeals %}
       <div class="users-list__item">
         <div class="row align-items-center">
-          <div class="col-md-9"><a class="user-name user-link" href="user-page.html">
+          <div class="col-md-9">
+              <a class="user-name user-link"
+                 href="{% url 'appeals-detail-admin' appeal.pk %}">
             <div class="user-name__value">
                   {{ appeal.create_dt|date:"d.m.Y" }}
                   {{ appeal.card.get_user.get_full_name }}
@@ -54,7 +56,7 @@
             </div>
             <div class="event-date">
           {% if appeal.status != appeal.STATUS_APPROVED and appeal.status != appeal.STATUS_REJECTED %}
-                 Времени до решения:
+                 Время до решения:
                 <span
                         {% if appeal.time_for_complete > 0 %}
                             style="color: green"
@@ -68,43 +70,8 @@
             </div>
 
           </div>
-          <div class="col-md-3">
-            <div class="user-status">
+            {% include 'red_cards/appeal_status.html' %}
 
-                {% if appeal.status == appeal.STATUS_NEW %}
-                    <div class="user-status__value blue-color">НЕ ПРОСМОТРЕНО</div>
-                {% elif appeal.status == appeal.STATUS_IN_WORK %}
-                    <div class="user-status__value green-color">На рассмотрении</div>
-                {% elif appeal.status == appeal.STATUS_APPROVED %}
-                    <div class="user-status__value green-color">Принято</div>
-                {% elif appeal.status == appeal.STATUS_REJECTED %}
-                    <div class="user-status__value orange-color">Отказ</div>
-                {% else %}
-                    <div class="user-status__value orange-color">NA</div>
-                {% endif %}
-
-                {% if appeal.status == appeal.STATUS_NEW or appeal.status == appeal.STATUS_IN_WORK %}
-                    <span style="color: gray;">{{ appeal.executive.get_full_name }}</span>
-
-                    <form action="" method="POST">
-                    {% csrf_token %}
-                        <input type="hidden" name="appeal" value="{{ appeal.pk }}" />
-                    {% if appeal.executive != request.user %}
-                            <input type="hidden" name="action" value="assign" />
-                            <button class="btn btn-outline-primary">взять в работу</button>
-                    {% else %}
-                            <input type="hidden" name="action" value="free" />
-                            <button class="btn btn-outline-primary">отказаться</button>
-                    {% endif %}
-                    </form>
-                {% else %}
-                    <span style="color: gray;">{{ appeal.date_finished|date:"d.m.Y" }}</span>
-                {% endif %}
-
-
-
-            </div>
-          </div>
         </div>
       </div>
     {% endfor %}

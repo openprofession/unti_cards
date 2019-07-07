@@ -15,6 +15,8 @@ from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 
 from django.views.generic import FormView, TemplateView
+from django.views.generic.dates import SingleObjectTemplateResponseMixin
+
 from django import forms
 
 _sql_get_cards = """
@@ -298,7 +300,16 @@ def api_test2(request):
     return HttpResponse("OK!")
 
 
-class ChallengeForm(forms.Form):
+# ############################################################################ #
+
+class BaseAppealsView(
+    LoginRequiredMixin,
+    TemplateView,
+):
+    """   """
+
+
+class AppealForm(forms.Form):
     """
 
     """
@@ -321,11 +332,13 @@ class ChallengeForm(forms.Form):
         widget=forms.HiddenInput,
     )
 
-    def save(self):
+    def save(self, card):
+
+        assert isinstance(card, models.Card)
         # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
         # https://stackoverflow.com/questions/1718429/file-does-not-upload-from-web-form-in-django
-        card = models.Card.objects.get(uuid=self.cleaned_data.get('card'))
-        new_appel = models.Appeal.objects.create(
+
+        new_appeal = models.Appeal.objects.create(
             description=self.cleaned_data.get('description'),
             status=models.Appeal.STATUS_NEW,
             card=card,
@@ -336,23 +349,23 @@ class ChallengeForm(forms.Form):
             name=models.Status.NAME_CONSIDERATION,
             system=models.Status.SYSTEM_LEADER,
         )
-        return new_appel
+        return new_appeal
 
 
-class ArgsChallengeForm(forms.Form):
+class ArgsAppealsFormView(forms.Form):
     # user = forms.ChoiceField(required=True)
     card = forms.UUIDField(required=True)
 
 
-class ChallengeFormView(LoginRequiredMixin, FormView):
-    template_name = 'challenge.html'
-    form_class = ChallengeForm
+class AppealsFormView(FormView, BaseAppealsView):
+    form_class = AppealForm
+    template_name = 'red_cards/appeal_form.html'  # "%s/%s%s.html"
 
     def get_context_data(self, **kwargs):
-        context = super(ChallengeFormView, self).get_context_data(**kwargs)
+        context = super(AppealsFormView, self).get_context_data(**kwargs)
 
         # ------------------------------------------------------------ #
-        params = ArgsChallengeForm(self.request.GET)
+        params = ArgsAppealsFormView(self.request.GET)
         if not params.is_valid():
             raise Http404
         #
@@ -360,8 +373,7 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
         card = models.Card.objects.get(uuid=params['card'])
         status = card.get_status()
         assert isinstance(status, models.Status)
-        if status.name != status.NAME_PUBLISHED:
-            raise HttpResponseForbidden
+
         #
         if int(self.request.user.leader_id) != int(card.leader_id):
             # only own car can be challenge
@@ -379,9 +391,16 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
-        if form.is_valid():
 
-            appeal = form.save()
+        assert isinstance(form, AppealForm)
+        if form.is_valid():
+            card = models.Card.objects.get(uuid=form.cleaned_data.get('card'))
+
+            if card.get_status().name != models.Status.NAME_PUBLISHED:
+                messages.error(request, 'Карточка уже оспорена')
+                return self.get(request, *args, **kwargs)
+
+            appeal = form.save(card)
             assert isinstance(appeal, models.Appeal)
             # messages.success(
             #     request, 'Апеляция успешно добавлена {}'.format(appeal)
@@ -393,27 +412,15 @@ class ChallengeFormView(LoginRequiredMixin, FormView):
         #
 
     def get_success_url(self):
-        return reverse('challenge_ready')
+        return reverse('appeals-add-success')
 
 
-def challenge_ready(request):  # ChallengeFormView
-    return render(request, template_name="challenge-accepted.html", )
+class SuccessAppealsFormView(BaseAppealsView):
+    template_name = 'red_cards/appeal_form_success.html'  # "%s/%s%s.html"
 
 
-class AppealListFormView(LoginRequiredMixin, TemplateView):
-    template_name = 'request.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(AppealListFormView, self).get_context_data(**kwargs)
-        appeals = models.Appeal.objects.all().order_by(
-            '-create_dt'
-        )
-        context.update({
-            'appeals': appeals,
-        })
-        return context
-
-    def post(self, request, *args, **kwargs):
+class ExecutiveMixin:
+    def handle_executive(self, request, *args, **kwargs):
         appeal_id = self.request.POST.get('appeal')
         appeal = models.Appeal.objects.filter(pk=appeal_id).first()
         if not appeal:
@@ -423,7 +430,7 @@ class AppealListFormView(LoginRequiredMixin, TemplateView):
             return self.get(request, *args, **kwargs)
         #
         if appeal.status in (
-            appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
+                appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
         ):
             messages.error(
                 request, 'Данная заявка закрыта.'
@@ -434,6 +441,7 @@ class AppealListFormView(LoginRequiredMixin, TemplateView):
         if action == 'assign':
             appeal.executive = request.user
             appeal.date_assign = models.timezone.now()
+            appeal.status = appeal.STATUS_IN_WORK
             appeal.save()
 
             messages.success(
@@ -444,6 +452,7 @@ class AppealListFormView(LoginRequiredMixin, TemplateView):
         elif action == 'free':
             appeal.executive = None
             appeal.date_assign = None
+            appeal.status = appeal.STATUS_NEW
             appeal.save()
 
             messages.success(
@@ -456,3 +465,100 @@ class AppealListFormView(LoginRequiredMixin, TemplateView):
         #
 
         return self.get(request, *args, **kwargs)
+
+
+class AppealListView(ExecutiveMixin, BaseAppealsView):
+    template_name = 'red_cards/appeal_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AppealListView, self).get_context_data(**kwargs)
+        appeals = models.Appeal.objects.all().order_by(
+            '-create_dt'
+        )
+        context.update({
+            'appeals': appeals,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        return self.handle_executive(request, *args, **kwargs)
+
+
+class ArgsAppealDetailAdminView(forms.Form):
+    pk = forms.IntegerField(required=True)
+
+    def get_appeal(self):
+        if not self.is_valid():
+            return None
+        #
+        return models.Appeal.objects.filter(
+            pk=self.cleaned_data.get('pk')
+        ).first()
+
+
+class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView):
+    template_name = 'red_cards/appeal_detail_admin.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AppealDetailAdminView, self).get_context_data(**kwargs)
+        appeal = ArgsAppealDetailAdminView(kwargs).get_appeal()
+        context.update({
+            'card': appeal.card,
+            'appeal': appeal,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form_name = self.request.POST.get('form_name')
+        if form_name == 'executive':
+            return self.handle_executive(request, *args, **kwargs)
+        elif form_name == 'manage':
+            appeal = models.Appeal.objects.filter(
+                pk=self.request.POST.get('appeal')
+            ).first()
+            if appeal is None:
+                messages.error(request, 'Заявка не найдена в базе данных')
+                return self.get(request, *args, **kwargs)
+            #
+            assert isinstance(appeal, models.Appeal)
+            if request.user != appeal.executive:
+                messages.error(request, 'Заявку рассматривает другой модератор')
+                return self.get(request, *args, **kwargs)
+            #
+
+            if appeal.status != appeal.STATUS_IN_WORK:
+                messages.error(request, 'Заявка уже закрыта')
+                return self.get(request, *args, **kwargs)
+            #
+
+            action = self.request.POST.get('action')
+            if action == 'accept':
+                models.Status.objects.create(
+                    card=appeal.card,
+                    name=models.Status.NAME_ELIMINATED,
+                )
+                appeal.status = appeal.STATUS_APPROVED
+                appeal.executive = request.user
+                appeal.date_finished = models.timezone.now()
+                appeal.save()
+            #
+            elif action == 'reject':
+                models.Status.objects.create(
+                    card=appeal.card,
+                    name=models.Status.NAME_ISSUED,
+                )
+                appeal.status = appeal.STATUS_REJECTED
+                appeal.executive = request.user
+                appeal.date_finished = models.timezone.now()
+                appeal.save()
+
+
+            return self.get(request, *args, **kwargs)
+
+
+        else:
+            return self.get(request, *args, **kwargs)
+        #
+
+
+# ############################################################################ #

@@ -1,0 +1,43 @@
+
+          <div class="col-md-3">
+            <div class="user-status">
+
+                {% if appeal.status == appeal.STATUS_NEW %}
+                    <div class="user-status__value blue-color">НЕ ПРОСМОТРЕНО</div>
+                {% elif appeal.status == appeal.STATUS_IN_WORK %}
+                    <div class="user-status__value green-color">На рассмотрении</div>
+                {% elif appeal.status == appeal.STATUS_APPROVED %}
+                    <div class="user-status__value green-color">Принято</div>
+                {% elif appeal.status == appeal.STATUS_REJECTED %}
+                    <div class="user-status__value orange-color">Отказ</div>
+                {% else %}
+                    <div class="user-status__value orange-color">NA</div>
+                {% endif %}
+
+                {% if appeal.status == appeal.STATUS_NEW or appeal.status == appeal.STATUS_IN_WORK %}
+                    {% if appeal.executive %}
+                        <span style="color: gray;">{{ appeal.executive.get_full_name }}</span>
+                        <span style="color: gray;">{{ appeal.date_assign|date:"d.m.Y"  }}</span>
+                    {% endif %}
+
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_name" value="executive" />
+
+                        <input type="hidden" name="appeal" value="{{ appeal.pk }}" />
+                        {% if appeal.executive != request.user %}
+                            <input type="hidden" name="action" value="assign" />
+                            <button class="btn btn-outline-primary">взять в работу</button>
+                        {% else %}
+                            <input type="hidden" name="action" value="free" />
+                            <button class="btn btn-outline-primary">отказаться</button>
+                        {% endif %}
+                    </form>
+                {% else %}
+                    <span style="color: gray;">{{ appeal.date_finished|date:"d.m.Y" }}</span>
+                {% endif %}
+
+
+
+            </div>
+          </div>

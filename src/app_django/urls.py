@@ -46,13 +46,18 @@ urlpatterns += [
                       views.AddCardAdminFormView.as_view(),
                       name='card-add'
                   ),
-                  path(
-                      'challenge',
-                      views.ChallengeFormView.as_view(),
-                      name='challenge'
-                  ),
-                  path('challenge/success', views.challenge_ready, name='challenge_ready'),
-                  path('appeals', views.AppealListFormView.as_view(), name='appeal_list'),
+                  path('appeals/add',
+                       views.AppealsFormView.as_view(),
+                       name='appeals-add'),
+                  path('appeals/add/success',
+                       views.SuccessAppealsFormView.as_view(),
+                       name='appeals-add-success'),
+                  path('appeals',
+                       views.AppealListView.as_view(),
+                       name='appeals-list'),
+                  path('appeals/<str:pk>',
+                       views.AppealDetailAdminView.as_view(),
+                       name='appeals-detail-admin'),
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

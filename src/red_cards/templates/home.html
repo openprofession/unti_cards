@@ -88,7 +88,7 @@
                 {% if status.name == status.NAME_PUBLISHED %}
                   <div class="event-panel__item">
                       <a class="btn btn-outline-primary"
-                         href="{% url 'challenge' %}?user={{ request.user.leader_id }}&card={{ status.card.uuid }}">Оспорить</a>
+                         href="{% url 'appeals-add' %}?user={{ request.user.leader_id }}&card={{ status.card.uuid }}">Оспорить</a>
                   </div>
                     <div class="event-panel__item">
                         <div class="timer">
