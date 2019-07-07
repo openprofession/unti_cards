@@ -85,11 +85,13 @@
           {{ appeal.description  }}
               </p>
       </div>
+          {% if appeal.file %}
       <div class="form-group">
         <div class="custom-file">
             <a href="{{ appeal.file.url }}" download>{{ appeal.file.name  }}</a>
         </div>
       </div>
+          {% endif %}
       </div>
 
             {% include 'red_cards/appeal_status.html' %}
