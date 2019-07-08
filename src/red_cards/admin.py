@@ -81,6 +81,7 @@ class StatusAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         'is_public',
+        'user',
     )
 
     def has_change_permission(self, request, obj=None):
