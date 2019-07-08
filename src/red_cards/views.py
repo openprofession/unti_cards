@@ -560,21 +560,20 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
                 appeal.executive = request.user
                 appeal.date_finished = models.timezone.now()
                 appeal.save()
-            #
             elif action == 'reject':
                 models.Status.objects.create(
                     card=appeal.card,
                     name=models.Status.NAME_ISSUED,
+                    user=request.user
                 )
                 appeal.status = appeal.STATUS_REJECTED
                 appeal.executive = request.user
                 appeal.date_finished = models.timezone.now()
                 appeal.save()
-
-
+            else:
+                return self.get(request, *args, **kwargs)  # if hacker
+            #
             return self.get(request, *args, **kwargs)
-
-
         else:
             return self.get(request, *args, **kwargs)
         #
