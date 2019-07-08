@@ -19,12 +19,13 @@
       <div class="col-md-9">
 
                 <div class="user-name">
-                  <div class="user-name__value">{{ request.user.get_full_name }}</div>
-                    <span class="user-name__id user-id">ID {{ request.user.leader_id }}</span>
+                  <div class="user-name__value">{{ card.get_user.get_full_name }}</div>
+                    <span class="user-name__id user-id">ID {{ card.get_user.leader_id }}</span>
                 </div>
       </div>
       <div class="col-md-3">
         <div class="user-status">
+            {% comment %}
           <ul class="status-indicator">
             <li><span class="circle circle-orange"></span></li>
             <li><span class="circle circle-orange"></span></li>
@@ -32,6 +33,7 @@
             <li><span class="circle"></span></li>
             <li><span class="circle"></span></li>
           </ul>
+            {% endcomment %}
         </div>
       </div>
     </div>

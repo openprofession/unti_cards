@@ -76,6 +76,13 @@ class Status(models.Model):
         auto_now_add=True,
     )
 
+    user = models.ForeignKey(
+        User,
+        verbose_name=_('User'),
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+    )
+
     SYSTEM_CARDS = 'cards'
     SYSTEM_LEADER = 'leader'
     SYSTEM_EXPERIMENTS = 'experiments'

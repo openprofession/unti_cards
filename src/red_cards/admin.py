@@ -4,6 +4,18 @@ from . import models
 from django.contrib.auth.admin import UserAdmin, Group, GroupAdmin
 
 
+# class RequestAdminMixin:
+#     def get_queryset(self, request):
+#         assert isinstance(self, admin.ModelAdmin)
+#         setattr(self, '_request', request)
+#         qs = super(RequestAdminMixin, self).get_queryset(request)
+#         return qs
+#
+#     @property
+#     def request(self):
+#         return getattr(self, '_request', None)
+
+
 class CustomUserAdmin(UserAdmin):
     """"""
     list_display = (
@@ -59,10 +71,11 @@ class CardAdmin(admin.ModelAdmin):
 @reg_admin_model(models.Status)
 class StatusAdmin(admin.ModelAdmin):
     list_display = (
+        'pk',
         'card',
+        'user',
         'change_dt',
         'system',
-        # 'leader_id',
         'name',
         'is_public',
     )
@@ -75,6 +88,10 @@ class StatusAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        obj.user = request.user
+        obj.save()
 
 
 @reg_admin_model(models.Event)

@@ -190,7 +190,9 @@ class AddCardForm(forms.Form):
         widget=forms.HiddenInput,
     )
 
-    def save(self):
+    def save(self, user):
+        assert isinstance(user, models.User)
+
         obj = models.Card.objects.create(
             type=self.cleaned_data.get('type'),
             reason=self.cleaned_data.get('reason'),
@@ -213,6 +215,7 @@ class AddCardForm(forms.Form):
             card=obj,
             system=models.Status.SYSTEM_LEADER,
             name=status,
+            user=user,
         )
         #
 
@@ -235,6 +238,7 @@ class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView)
         user = self.get_target_user()
         assert isinstance(user, models.User)
         form = context['form']
+        assert isinstance(form, AddCardForm)
         form.fields['leader_id'].initial = user.leader_id
 
         sql = _sql_get_cards.format(
@@ -274,9 +278,10 @@ class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView)
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
+        assert isinstance(form, AddCardForm)
         if form.is_valid():
 
-            card = form.save()
+            card = form.save(request.user)
             assert isinstance(card, models.Card)
             messages.success(
                 request, 'Карточка успешно добавлена {}'.format(card)
@@ -312,7 +317,6 @@ class BaseAppealsView(
     """   """
 
 
-
 class AppealForm(forms.Form):
     """
 
@@ -336,7 +340,7 @@ class AppealForm(forms.Form):
         widget=forms.HiddenInput,
     )
 
-    def save(self, card):
+    def save(self, card, user):
 
         assert isinstance(card, models.Card)
         # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
@@ -352,6 +356,7 @@ class AppealForm(forms.Form):
             card=card,
             name=models.Status.NAME_CONSIDERATION,
             system=models.Status.SYSTEM_LEADER,
+            user=user,
         )
         return new_appeal
 
@@ -385,6 +390,7 @@ class AppealsFormView(FormView, BaseAppealsView):
         #
         # ------------------------------------------------------------ #
         form = context['form']
+        assert isinstance(form, AppealForm)
         form.fields['card'].initial = card.uuid
         # ------------------------------------------------------------ #
         context.update({
@@ -404,7 +410,7 @@ class AppealsFormView(FormView, BaseAppealsView):
                 messages.error(request, 'Карточка уже оспорена')
                 return self.get(request, *args, **kwargs)
 
-            appeal = form.save(card)
+            appeal = form.save(card, request.user)
             assert isinstance(appeal, models.Appeal)
             # messages.success(
             #     request, 'Апеляция успешно добавлена {}'.format(appeal)
@@ -548,6 +554,7 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
                 models.Status.objects.create(
                     card=appeal.card,
                     name=models.Status.NAME_ELIMINATED,
+                    user=request.user
                 )
                 appeal.status = appeal.STATUS_APPROVED
                 appeal.executive = request.user
