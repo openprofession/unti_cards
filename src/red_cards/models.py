@@ -3,26 +3,21 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import uuid
-from django.db.models import Count
 from django.utils import timezone
 from app_django.tools import print_seconds
 
 # User = get_user_model()
 
-# from rest_framework_api_key.models import AbstractAPIKey
 
 from django.contrib.auth.models import (
     AbstractUser,
-    UserManager as _UserManager,
 )
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
 
 
 class User(AbstractUser):
-    '''
+    """
         python manage.py makemigrations red_cards
-    '''
+    """
 
     second_name = models.CharField(max_length=50)
 
@@ -50,7 +45,8 @@ class User(AbstractUser):
 
     @property
     def fio(self):
-        return ' '.join(filter(None, [self.last_name, self.first_name, self.second_name]))
+        return ' '.join(filter(None, [
+            self.last_name, self.first_name, self.second_name]))
 
     def get_full_name(self):
         return ' '.join(filter(None, [self.last_name, self.first_name]))
@@ -183,9 +179,10 @@ class Card(models.Model):
         (TYPE_YELLOW, _('Желтая карточка')),
         (TYPE_GREEN, _('Зеленая карточка')),
     )
-    type = models.CharField(  # тип карточки, string,  допустимые значения:  [“red”, “yellow”, “green”]
+    type = models.CharField(
         verbose_name=_('Type'),
-        help_text=_('тип карточки, string, допустимые значения: [“red”, “yellow”, “green”]'),
+        help_text=_('тип карточки, string, допустимые значения: '
+                    '[“red”, “yellow”, “green”]'),
         choices=TYPE_CHOICES,
         max_length=255,
         null=False, blank=False,
@@ -226,7 +223,7 @@ class Card(models.Model):
         null=False, blank=False,
     )
 
-    leader_id = models.IntegerField(  # идентификатор пользователя в Leader Id, integer
+    leader_id = models.IntegerField(
         verbose_name=_('Leader'),  # кому выдана карточка
         help_text=_('идентификатор пользователя в Leader Id, integer'),
         # max_length=255,
@@ -236,7 +233,8 @@ class Card(models.Model):
     # incident_dt - время нарушения, дата в формате “YYYY-MM-DD hh:mm”
     incident_dt = models.DateTimeField(
         verbose_name=_('Incident date'),
-        help_text=_('время нарушения, string, дата в формате “YYYY-MM-DD hh:mm”'),
+        help_text=_('время нарушения, string, '
+                    'дата в формате “YYYY-MM-DD hh:mm”'),
         null=False, blank=False,
     )
 
@@ -246,8 +244,9 @@ class Card(models.Model):
         max_length=255,
         null=True, blank=True,
     )
-    place_uuid = models.CharField(  # идентификатор места проведения мероприятия из Labs, string
-        verbose_name=_('идентификатор места проведения мероприятия из Labs, string'),
+    place_uuid = models.CharField(
+        verbose_name=_('идентификатор места проведения мероприятия из Labs, '
+                       'string'),
         max_length=255,
         null=True, blank=True,
     )
@@ -263,45 +262,95 @@ class Card(models.Model):
     def __str__(self):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
-    def save(self, *args, **kwargs):
-        super(Card, self).save(*args, **kwargs)
-        status = Status.objects.get_or_create(
-            card=self,
-            system=Status.SYSTEM_CARDS,
-            name=Status.NAME_INITIATED,
-            is_public=True,
+    @classmethod
+    def create_new_card(
+            cls, *,
+            type, reason, description=None, source, leader_id,
+            incident_dt=None, event_uuid=None, place_uuid=None,
+            system=Status.SYSTEM_CARDS, status=Status.NAME_INITIATED,
+            user=None,
+    ):
+        """
+            создает новую карточку, назначает ей статус
+            * save вызываеться и при создании и при обновлении
+        :param type:            тип [red, yellow, green]
+        :param reason:          причина
+        :param description:     описание
+        :param source:          источник карточки [cards, leader, experiments]
+        :param leader_id:       кому выдана карточка
+        :param incident_dt:     время нарушения
+        :param event_uuid:      идентификатор мероприятия из Labs
+        :param place_uuid:      идентификатор места проведения
+        :param system:          источник изменения статуса [
+                                    cards, leader, cards-transform, experiments
+                                ]
+        :param status:          статус карточки [
+                                    initiated, published, consideration, issued,
+                                    eliminated, approved, rejected, recommended
+                                ]
+        :param user:            кто изменил статус карточки
+
+        :return:                новую карточку
+        """
+        new_card = cls.objects.create(
+            type=type,
+            reason=reason,
+            description=description,
+            source=source,
+            leader_id=leader_id,
+            incident_dt=incident_dt,
+            event_uuid=event_uuid,
+            place_uuid=place_uuid,
+
+            last_status=status,
         )
-        self.current_status = status
-        # if self.type == self.TYPE_YELLOW:
-        #     yellow_cards = Card.objects.filter(
-        #         leader_id=self.leader_id,
-        #         last_status=Status.NAME_INITIATED,
-        #     ).all()
-        #     # fixme: add transaction
-        #     if yellow_cards.count() >= 2:
-        #         red_card_data = {
-        #             'leader_id':        self.leader_id,
-        #             'type':             self.TYPE_RED,
-        #             'reason':           'Получено две желтые',
-        #             'description':      '',
-        #             'source':           self.SOURCE_CARDS,
-        #             'incident_dt':      timezone.now(),
-        #         }
-        #         for yellow_card in yellow_cards:
-        #             Status.objects.create(
-        #                 card=yellow_card,
-        #                 name=Status.NAME_ELIMINATED,
-        #                 system=Status.SYSTEM_CARDS_TRANSFORM,
-        #             )
-        #             red_card_data['description'] += yellow_card.reason + '\n'
-        #         #
-        #         red_card = Card.objects.create(**red_card_data)
-        #         Status.objects.create(
-        #             card=red_card,
-        #             name=Status.NAME_PUBLISHED,
-        #             system=Status.SYSTEM_CARDS_TRANSFORM,
-        #         )
-        # #   #
+        new_card.set_status(
+            user=user,
+            system=system,
+            name=status,
+        )
+
+        if type == cls.TYPE_YELLOW:
+            # fixme: add transaction
+            yellow_cards = Card.objects.filter(
+                leader_id=new_card.leader_id,
+                last_status=Status.NAME_ISSUED,
+            ).all()
+            if yellow_cards.count() >= 2:
+                red_card_data = {
+                    'leader_id':        new_card.leader_id,
+                    'type':             cls.TYPE_RED,
+                    'reason':           'Получено две желтые',
+                    'description':      '',
+                    'source':           cls.SOURCE_CARDS,
+                    'incident_dt':      timezone.now(),
+                }
+                for yellow_card in yellow_cards:
+                    yellow_card.set_status(
+                        name=Status.NAME_ELIMINATED,
+                        system=Status.SYSTEM_CARDS_TRANSFORM,
+                    )
+                    red_card_data['description'] += yellow_card.reason + '\n'
+                #
+                Card.create_new_card(
+                    **red_card_data,
+                    status=Status.NAME_PUBLISHED,
+                    system=Status.SYSTEM_CARDS_TRANSFORM,
+                )
+        #   #
+        return new_card
+
+    def set_status(
+            self, *,
+            system=Status.SYSTEM_CARDS, name=Status.NAME_INITIATED,
+            user=None,
+    ):
+        Status.objects.create(
+            card=self,
+            user=user,
+            system=system,
+            name=name,
+        )
 
     def get_status(self):
         return Status.objects.filter(
@@ -398,6 +447,57 @@ class Appeal(models.Model):
         on_delete=models.CASCADE,
         null=False, blank=False,
     )
+
+    @classmethod
+    def create_new_appeal(
+            cls, *,
+            user,
+            description, file=None, card
+    ):
+        new_appeal = cls.objects.create(
+            status=cls.STATUS_NEW,
+            description=description,
+            file=file,
+            card=card,
+        )
+        card.set_status(
+            name=Status.NAME_CONSIDERATION,
+            system=Status.SYSTEM_LEADER,
+            user=user,
+        )
+        return new_appeal
+
+    def assign(self, user):
+        self.executive = user
+        self.date_assign = timezone.now()
+        self.status = self.STATUS_IN_WORK
+        self.save()
+
+    def free(self):
+        self.executive = None
+        self.date_assign = None
+        self.status = self.STATUS_NEW
+        self.save()
+
+    def accept(self, user):
+        self.card.set_status(
+            name=Status.NAME_ELIMINATED,
+            user=user
+        )
+        self.status = self.STATUS_APPROVED
+        self.executive = user
+        self.date_finished = timezone.now()
+        self.save()
+
+    def reject(self, user):
+        self.card.set_status(
+            name=Status.NAME_ISSUED,
+            user=user
+        )
+        self.status = self.STATUS_REJECTED
+        self.executive = user
+        self.date_finished = timezone.now()
+        self.save()
 
     def save(self, *args, **kwargs):
         if not self.date_finished:

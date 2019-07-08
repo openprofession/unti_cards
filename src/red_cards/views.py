@@ -3,10 +3,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
 from app_django.settings import LOGOUT_REDIRECT
-from red_cards.api import XLEApi
 from red_cards.models import Event
 from red_cards.utils import update_events_data, update_enrolls_data
-from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 from . import models
 from django.contrib.auth.views import logout_then_login as base_logout
@@ -15,7 +13,6 @@ from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 
 from django.views.generic import FormView, TemplateView
-from django.views.generic.dates import SingleObjectTemplateResponseMixin
 
 from django import forms
 
@@ -193,17 +190,11 @@ class AddCardForm(forms.Form):
     def save(self, user):
         assert isinstance(user, models.User)
 
-        obj = models.Card.objects.create(
-            type=self.cleaned_data.get('type'),
-            reason=self.cleaned_data.get('reason'),
-            description=self.cleaned_data.get('description'),
-            source=models.Card.SOURCE_LEADER,
-            incident_dt=self.cleaned_data.get('date'),
-            leader_id=self.cleaned_data.get('leader_id'),
-        )
-        if obj.type == models.Card.TYPE_RED:
+        card_type = self.cleaned_data.get('type')
+
+        if card_type == models.Card.TYPE_RED:
             status = models.Status.NAME_PUBLISHED
-        elif obj.type in (
+        elif card_type in (
                 models.Card.TYPE_YELLOW,
                 models.Card.TYPE_GREEN,
         ):
@@ -211,15 +202,21 @@ class AddCardForm(forms.Form):
         else:
             status = models.Status.NAME_INITIATED
         #
-        new_status = models.Status.objects.create(
-            card=obj,
+
+        new_card = models.Card.create_new_card(
+            type=self.cleaned_data.get('type'),
+            reason=self.cleaned_data.get('reason'),
+            description=self.cleaned_data.get('description'),
+            source=models.Card.SOURCE_LEADER,
+            incident_dt=self.cleaned_data.get('date'),
+            leader_id=self.cleaned_data.get('leader_id'),
+
             system=models.Status.SYSTEM_LEADER,
-            name=status,
+            status=status,
             user=user,
         )
-        #
 
-        return obj
+        return new_card
 
 
 class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView):
@@ -284,7 +281,7 @@ class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView)
             card = form.save(request.user)
             assert isinstance(card, models.Card)
             messages.success(
-                request, 'Карточка успешно добавлена {}'.format(card)
+                request, 'Карточка успешно добавлена "{}"'.format(card.reason)
             )
 
             return self.form_valid(form)
@@ -341,22 +338,15 @@ class AppealForm(forms.Form):
     )
 
     def save(self, card, user):
-
-        assert isinstance(card, models.Card)
         # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
         # https://stackoverflow.com/questions/1718429/file-does-not-upload-from-web-form-in-django
 
-        new_appeal = models.Appeal.objects.create(
-            description=self.cleaned_data.get('description'),
-            status=models.Appeal.STATUS_NEW,
-            card=card,
-            file=self.cleaned_data.get('file'),
-        )
-        new_status = models.Status.objects.create(
-            card=card,
-            name=models.Status.NAME_CONSIDERATION,
-            system=models.Status.SYSTEM_LEADER,
+        new_appeal = models.Appeal.create_new_appeal(
             user=user,
+            card=card,
+            description=self.cleaned_data.get('description'),
+            file=self.cleaned_data.get('file'),
+
         )
         return new_appeal
 
@@ -409,6 +399,7 @@ class AppealsFormView(FormView, BaseAppealsView):
             if card.get_status().name != models.Status.NAME_PUBLISHED:
                 messages.error(request, 'Карточка уже оспорена')
                 return self.get(request, *args, **kwargs)
+            #
 
             appeal = form.save(card, request.user)
             assert isinstance(appeal, models.Appeal)
@@ -430,6 +421,10 @@ class SuccessAppealsFormView(BaseAppealsView):
 
 
 class ExecutiveMixin:
+    """
+        для модераторов
+        взять аппеляцию на рассмотрение
+    """
     def handle_executive(self, request, *args, **kwargs):
         appeal_id = self.request.POST.get('appeal')
         appeal = models.Appeal.objects.filter(pk=appeal_id).first()
@@ -449,21 +444,14 @@ class ExecutiveMixin:
         #
         action = self.request.POST.get('action')
         if action == 'assign':
-            appeal.executive = request.user
-            appeal.date_assign = models.timezone.now()
-            appeal.status = appeal.STATUS_IN_WORK
-            appeal.save()
-
+            appeal.assign(request.user)
             messages.success(
                 request, 'Заявка успешно оформлена на {}'.format(
                     request.user.get_full_name()
                 )
             )
         elif action == 'free':
-            appeal.executive = None
-            appeal.date_assign = None
-            appeal.status = appeal.STATUS_NEW
-            appeal.save()
+            appeal.free()
 
             messages.success(
                 request, '{} теперь больше не расматривает заявку.'.format(
@@ -551,25 +539,9 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
 
             action = self.request.POST.get('action')
             if action == 'accept':
-                models.Status.objects.create(
-                    card=appeal.card,
-                    name=models.Status.NAME_ELIMINATED,
-                    user=request.user
-                )
-                appeal.status = appeal.STATUS_APPROVED
-                appeal.executive = request.user
-                appeal.date_finished = models.timezone.now()
-                appeal.save()
+                appeal.accept(request.user)
             elif action == 'reject':
-                models.Status.objects.create(
-                    card=appeal.card,
-                    name=models.Status.NAME_ISSUED,
-                    user=request.user
-                )
-                appeal.status = appeal.STATUS_REJECTED
-                appeal.executive = request.user
-                appeal.date_finished = models.timezone.now()
-                appeal.save()
+                appeal.reject(request.user)
             else:
                 return self.get(request, *args, **kwargs)  # if hacker
             #
