@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'social_core',
     'django_filters',
     'rest_framework',
-    'rest_framework_api_key',
+
+    'rest_framework.authtoken',
+
     'widget_tweaks',
 
     'red_cards',
@@ -89,6 +91,12 @@ WSGI_APPLICATION = 'app_django.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    # https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework.authentication.BasicAuthentication', # only for dev!
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     # https://florimondmanca.github.io/djangorestframework-api-key/guide/
     # https://florimondmanca.github.io/djangorestframework-api-key/guide/#setting-permissions

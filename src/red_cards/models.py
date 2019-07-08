@@ -85,10 +85,12 @@ class Status(models.Model):
 
     SYSTEM_CARDS = 'cards'
     SYSTEM_LEADER = 'leader'
+    SYSTEM_CARDS_TRANSFORM = 'cards-transform'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CHOICES = (
         (SYSTEM_CARDS, _('Cards')),
         (SYSTEM_LEADER, _('Leader')),
+        (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
         (SYSTEM_EXPERIMENTS, _('Experiments')),
     )
     system = models.CharField(  # источник изменения статуса
@@ -270,6 +272,36 @@ class Card(models.Model):
             is_public=True,
         )
         self.current_status = status
+        # if self.type == self.TYPE_YELLOW:
+        #     yellow_cards = Card.objects.filter(
+        #         leader_id=self.leader_id,
+        #         last_status=Status.NAME_INITIATED,
+        #     ).all()
+        #     # fixme: add transaction
+        #     if yellow_cards.count() >= 2:
+        #         red_card_data = {
+        #             'leader_id':        self.leader_id,
+        #             'type':             self.TYPE_RED,
+        #             'reason':           'Получено две желтые',
+        #             'description':      '',
+        #             'source':           self.SOURCE_CARDS,
+        #             'incident_dt':      timezone.now(),
+        #         }
+        #         for yellow_card in yellow_cards:
+        #             Status.objects.create(
+        #                 card=yellow_card,
+        #                 name=Status.NAME_ELIMINATED,
+        #                 system=Status.SYSTEM_CARDS_TRANSFORM,
+        #             )
+        #             red_card_data['description'] += yellow_card.reason + '\n'
+        #         #
+        #         red_card = Card.objects.create(**red_card_data)
+        #         Status.objects.create(
+        #             card=red_card,
+        #             name=Status.NAME_PUBLISHED,
+        #             system=Status.SYSTEM_CARDS_TRANSFORM,
+        #         )
+        # #   #
 
     def get_status(self):
         return Status.objects.filter(

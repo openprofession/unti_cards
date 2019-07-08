@@ -7,8 +7,9 @@ from rest_framework import mixins
 from red_cards.models import Card
 from red_cards.serializers import CardSerializer
 
-from rest_framework_api_key.permissions import HasAPIKey
 from django.utils.translation import ugettext_lazy as _
+
+from rest_framework.permissions import IsAuthenticated
 
 
 class ListingFilter(django_filters.FilterSet):
@@ -60,7 +61,8 @@ class CardViewSet(
     """
         Карточки
     """
-    permission_classes = (HasAPIKey, )
+    # permission_classes = (HasAPIKey, )
+    permission_classes = (IsAuthenticated, )
 
     queryset = Card.objects.all()
     serializer_class = CardSerializer
