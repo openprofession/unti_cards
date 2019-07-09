@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import uuid
@@ -207,62 +207,6 @@ class CardManager(models.Manager):
             system=system,
             name=status,
         )
-
-        if type == new_card.TYPE_YELLOW:
-            with transaction.atomic():
-                yellow_cards = Card.objects.filter(
-                    type=Card.TYPE_YELLOW,
-                    leader_id=new_card.leader_id,
-                    last_status=Status.NAME_ISSUED,
-                ).all()
-                if yellow_cards.count() >= 2:
-                    red_card_data = {
-                        'leader_id':        new_card.leader_id,
-                        'type':             new_card.TYPE_RED,
-                        'reason':           'Получено две желтые',
-                        'description':      '',
-                        'source':           new_card.SOURCE_CARDS,
-                        'incident_dt':      timezone.now(),
-                    }
-                    for yellow_card in yellow_cards:
-                        yellow_card.set_status(
-                            name=Status.NAME_ELIMINATED,
-                            system=Status.SYSTEM_CARDS_TRANSFORM,
-                        )
-                        red_card_data['description'] += yellow_card.reason + '\n'
-                    #
-                    Card.objects.create(
-                        **red_card_data,
-                        status=Status.NAME_PUBLISHED,
-                        system=Status.SYSTEM_CARDS_TRANSFORM,
-                    )
-        #   #   #
-        if type in (
-                new_card.TYPE_GREEN,
-                new_card.TYPE_RED,
-        ):
-            with transaction.atomic():
-                green_cards = Card.objects.filter(
-                    type=Card.TYPE_GREEN,
-                    leader_id=new_card.leader_id,
-                    last_status=Status.NAME_ISSUED,
-                ).order_by('incident_dt').all()
-                red_cards = Card.objects.filter(
-                    type=Card.TYPE_RED,
-                    leader_id=new_card.leader_id,
-                    last_status=Status.NAME_ISSUED,
-                ).order_by('incident_dt').all()
-                for green, red in zip(green_cards, red_cards):
-                    green.set_status(
-                        name=Status.NAME_ELIMINATED,
-                        system=Status.SYSTEM_CARDS_REPAYMENT
-                    )
-                    red.set_status(
-                        name=Status.NAME_ELIMINATED,
-                        system=Status.SYSTEM_CARDS_REPAYMENT
-                    )
-        #   #   #
-
         return new_card
 
 
@@ -603,3 +547,67 @@ def update_stock(sender, instance, **kwargs):
     card = instance.card
     card.last_status = instance.name
     card.save()
+
+    assert isinstance(instance, Status)
+    if instance.name in (
+            Status.NAME_ELIMINATED,
+    ):
+        return
+    #
+    card = instance.card
+    #
+    if type == card.TYPE_YELLOW:
+        with transaction.atomic():
+            yellow_cards = Card.objects.filter(
+                type=Card.TYPE_YELLOW,
+                leader_id=card.leader_id,
+                last_status=Status.NAME_ISSUED,
+            ).all()
+            if yellow_cards.count() >= 2:
+                red_card_data = {
+                    'leader_id': card.leader_id,
+                    'type': card.TYPE_RED,
+                    'reason': 'Получено две желтые',
+                    'description': '',
+                    'source': card.SOURCE_CARDS,
+                    'incident_dt': timezone.now(),
+                }
+                for yellow_card in yellow_cards:
+                    yellow_card.set_status(
+                        name=Status.NAME_ELIMINATED,
+                        system=Status.SYSTEM_CARDS_TRANSFORM,
+                    )
+                    red_card_data['description'] += yellow_card.reason + '\n'
+                #
+                Card.objects.create(
+                    **red_card_data,
+                    status=Status.NAME_PUBLISHED,
+                    system=Status.SYSTEM_CARDS_TRANSFORM,
+                )
+    #   #   #
+    if card.type in (
+            card.TYPE_GREEN,
+            card.TYPE_RED,
+    ):
+        with transaction.atomic():
+            green_cards = Card.objects.filter(
+                type=Card.TYPE_GREEN,
+                leader_id=card.leader_id,
+                last_status=Status.NAME_ISSUED,
+            ).order_by('incident_dt').all()
+            red_cards = Card.objects.filter(
+                type=Card.TYPE_RED,
+                leader_id=card.leader_id,
+                last_status=Status.NAME_ISSUED,
+            ).order_by('incident_dt').all()
+            for green, red in zip(green_cards, red_cards):
+                green.set_status(
+                    name=Status.NAME_ELIMINATED,
+                    system=Status.SYSTEM_CARDS_REPAYMENT
+                )
+                red.set_status(
+                    name=Status.NAME_ELIMINATED,
+                    system=Status.SYSTEM_CARDS_REPAYMENT
+                )
+    #   #   #
+
