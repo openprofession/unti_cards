@@ -11,6 +11,7 @@ from django.contrib.auth.views import logout_then_login as base_logout
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
+from django.core.paginator import Paginator
 
 from django.views.generic import FormView, TemplateView
 
@@ -553,18 +554,48 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
 
 # ############################################################################ #
 
-class SearchView(TemplateView):
+class SearchView(PermissionRequiredMixin, TemplateView):
     template_name = 'selection-page.html'
+
+    permission_required = (
+        'is_staff',
+    )
 
     def get_context_data(self, **kwargs):
         context = super(SearchView, self).get_context_data(**kwargs)
-        users = models.User.objects.filter(
+        all_users = models.User.objects.filter(
             leader_id__isnull=False,
         ).order_by(
             'first_name', 'last_name', 'username'
         ).all()
+        selected_users = []
+
+        selected_user = self.request.GET.get('user', None)
+        if selected_user:
+            selected_user = selected_user.split(' ', 1)[0].strip('L')
+            selected_user = models.User.objects.filter(
+                leader_id=selected_user
+            ).first()
+        #
+        if selected_user:
+            selected_users.append(selected_user)
+        #
+
+        _page_id = self.request.GET.get('page', 1)
+        paginator = Paginator(all_users, 10)
+        page_users = paginator.get_page(_page_id)
+        #
+
+        by_search = True
+        if not selected_users:
+            selected_users = page_users
+            by_search = False
+        #
+
         context.update({
-            'users': users,
+            'all_users':        all_users,
+            'selected_users':   selected_users,
+            'by_search':        by_search,
         })
         return context
 

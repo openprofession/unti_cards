@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
+{% load bootstrap_pagination %}
 
 
 {% block content %}
@@ -13,7 +14,7 @@
       </ol>
     </nav>
     <h1 class="section-title">Выберите студента</h1>
-    <form class="form-search" action="#" method="get">
+    <form class="form-search" action="" method="get">
       <div class="row align-items-center">
 
           {% comment %}
@@ -29,14 +30,18 @@
 
     <div class="col-md-6">
       <div class="form-group" style="padding: 0">
-        <select class="selectpicker form-control" id="sls1" data-live-search="true" style="padding: 0!important;">
-            {% for user in users %}
-                <option data-tokens="Аудитория 1">L{{ user.leader_id }} {{ user.get_full_name }}</option>
+        <select class="selectpicker form-control" id="sls1"
+                data-live-search="true" style="padding: 0!important;"
+                name="user"
+        >
+            {% for user in all_users %}
+                <option data-tokens="{{ user.leader_id }}">L{{ user.leader_id }} {{ user.get_full_name }}</option>
             {% endfor %}
         </select>
       </div>
-
-      <div class="form-button-group">
+    </div>
+    <div class="col-md-6">
+      <div class="form-group" style="padding: 0">
         <div class="form-button-group__item">
           <button class="btn btn-primary" type="submit">выбрать</button>
         </div>
@@ -51,35 +56,43 @@
         </div>
       </div>
     </form>
+
+
     <div class="users-list">
+
+        {% for user in selected_users %}
       <div class="users-list__item">
         <div class="row align-items-center">
-          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
-              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
-          <div class="col-md-3">
-            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
+          <div class="col-md-4">
+              <a class="user-name user-link" href="selected-form.html">
+              <div class="user-name__value">{{ user.get_full_name }}</div>
+              <span class="user-name__id user-id">ID {{ user.leader_id }}</span></a>
+          </div>
+          <div class="col-md-4">
+              <a class="btn btn-outline-primary" target="_blank"
+                 href="{% url 'card-add' leader_id=user.leader_id %}" type="submit">Выдать карточку</a>
+          </div>
+          <div class="col-md-4">
+            <div class="user-email align--right"><a href="mailto:{{ user.email }}">{{ user.email }}</a></div>
           </div>
         </div>
       </div>
-      <div class="users-list__item">
-        <div class="row align-items-center">
-          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
-              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
-          <div class="col-md-3">
-            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
-          </div>
+        {% endfor %}
+
+    {% if not by_search %}
+<div class="box-footer clearfix" style="text-align: center;">
+    {% bootstrap_paginate selected_users range=10 show_first_last=True %}
+</div>
+{% else %}
+<div class="box-footer clearfix" style="text-align: center;">
+      <div class="form-button-group">
+        <div class="form-button-group__item">
+          <a class="btn btn-outline-primary" href="{% url 'users-search' %}" type="submit">показать всех</a>
         </div>
       </div>
-      <div class="users-list__item">
-        <div class="row align-items-center">
-          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
-              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
-          <div class="col-md-3">
-            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
-          </div>
-        </div>
-      </div>
-    </div>
+</div>
+{% endif %}
+
   </div>
 </section>
 </main>

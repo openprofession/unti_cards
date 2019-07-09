@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'rest_framework.authtoken',
+    'bootstrap_pagination',
 
     'widget_tweaks',
 
