@@ -68,7 +68,7 @@ class CardSerializer(serializers.ModelSerializer):
         ):
             validated_data['status'] = models.Status.NAME_INITIATED
         elif validated_data['type'] == models.Card.TYPE_GREEN:
-            validated_data['status'] = models.Status.NAME_PUBLISHED
+            validated_data['status'] = models.Status.NAME_ISSUED
         #
 
         validated_data['user'] = self.context['request'].user
