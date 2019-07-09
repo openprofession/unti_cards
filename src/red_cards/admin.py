@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from . import models
 from django.contrib.auth.admin import UserAdmin, Group, GroupAdmin
-
+from django.utils.translation import ugettext_lazy as _
 
 # class RequestAdminMixin:
 #     def get_queryset(self, request):
@@ -16,15 +16,39 @@ from django.contrib.auth.admin import UserAdmin, Group, GroupAdmin
 #         return getattr(self, '_request', None)
 
 
+# class CustomUserAdmin(UserAdmin):
+#     """"""
+#     list_display = (
+#         'username', 'email', 'first_name', 'last_name',
+#         'is_assistant',
+#         'unti_id',
+#         'leader_id',
+#     )
+
+
 class CustomUserAdmin(UserAdmin):
-    """"""
+    ordering = ('email',)
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+        (_('sso'), {'fields': ('is_assistant', 'unti_id', 'leader_id', )}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
+                       'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+
     list_display = (
-        'username', 'email', 'first_name', 'last_name',
+        'username', 'email', 'first_name', 'last_name', 'is_staff',
         'is_assistant',
         'unti_id',
         'leader_id',
     )
 
+    #
+#
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)

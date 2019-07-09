@@ -220,10 +220,21 @@ class AddCardForm(forms.Form):
         return new_card
 
 
-class AddCardAdminFormView(LoginRequiredMixin,PermissionRequiredMixin, FormView):
+class RolePermissionMixin(PermissionRequiredMixin):
     permission_required = (
         'is_staff',
     )
+
+    def has_permission(self):
+        if self.request.user:
+            if self.request.user.is_assistant:
+                return True
+        #   #
+        return super(RolePermissionMixin, self).has_permission()
+
+
+class AddCardAdminFormView(RolePermissionMixin, LoginRequiredMixin, FormView):
+
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
@@ -466,12 +477,8 @@ class ExecutiveMixin:
         return self.get(request, *args, **kwargs)
 
 
-class AppealListView(ExecutiveMixin, BaseAppealsView, PermissionRequiredMixin):
+class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_list.html'
-
-    permission_required = (
-        'is_staff',
-    )
 
     def get_context_data(self, **kwargs):
         context = super(AppealListView, self).get_context_data(**kwargs)
@@ -499,12 +506,8 @@ class ArgsAppealDetailAdminView(forms.Form):
         ).first()
 
 
-class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredMixin):
+class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_detail_admin.html'
-
-    permission_required = (
-        'is_staff',
-    )
 
     def get_context_data(self, **kwargs):
         context = super(AppealDetailAdminView, self).get_context_data(**kwargs)
@@ -554,12 +557,8 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
 
 # ############################################################################ #
 
-class SearchView(PermissionRequiredMixin, TemplateView):
+class SearchView(RolePermissionMixin, TemplateView):
     template_name = 'selection-page.html'
-
-    permission_required = (
-        'is_staff',
-    )
 
     def get_context_data(self, **kwargs):
         context = super(SearchView, self).get_context_data(**kwargs)
