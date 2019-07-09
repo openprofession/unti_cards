@@ -87,6 +87,7 @@
       </div>
         {% endfor %}
 
+    {% comment %}
     {% if not by_search %}
 <div class="box-footer clearfix" style="text-align: center;">
     {% bootstrap_paginate selected_users range=10 show_first_last=True %}
@@ -100,7 +101,7 @@
       </div>
 </div>
 {% endif %}
-
+{% endcomment %}
   </div>
 </section>
 </main>

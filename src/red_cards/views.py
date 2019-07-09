@@ -581,21 +581,21 @@ class SearchView(PermissionRequiredMixin, TemplateView):
             selected_users.append(selected_user)
         #
 
-        _page_id = self.request.GET.get('page', 1)
-        paginator = Paginator(all_users, 10)
-        page_users = paginator.get_page(_page_id)
-        #
+        # _page_id = self.request.GET.get('page', 1)
+        # paginator = Paginator(all_users, 10)
+        # page_users = paginator.get_page(_page_id)
+        # #
 
-        by_search = True
-        if not selected_users:
-            selected_users = page_users
-            by_search = False
-        #
+        # by_search = True
+        # if not selected_users:
+        #     selected_users = page_users
+        #     by_search = False
+        # #
 
         context.update({
             'all_users':        all_users,
             'selected_users':   selected_users,
-            'by_search':        by_search,
+            # 'by_search':        by_search,
         })
         return context
 
