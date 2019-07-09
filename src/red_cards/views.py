@@ -204,7 +204,7 @@ class AddCardForm(forms.Form):
         #
 
         new_card = models.Card.create_new_card(
-            type=self.cleaned_data.get('type'),
+            type=card_type,
             reason=self.cleaned_data.get('reason'),
             description=self.cleaned_data.get('description'),
             source=models.Card.SOURCE_LEADER,

@@ -313,6 +313,7 @@ class Card(models.Model):
         if type == cls.TYPE_YELLOW:
             # fixme: add transaction
             yellow_cards = Card.objects.filter(
+                type=Card.TYPE_YELLOW,
                 leader_id=new_card.leader_id,
                 last_status=Status.NAME_ISSUED,
             ).all()

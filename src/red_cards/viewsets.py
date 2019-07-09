@@ -4,7 +4,7 @@ import django_filters
 from rest_framework import viewsets
 from rest_framework import mixins
 
-from red_cards.models import Card
+from red_cards.models import Card, Status
 from red_cards.serializers import CardSerializer
 
 from django.utils.translation import ugettext_lazy as _
@@ -17,6 +17,9 @@ class ListingFilter(django_filters.FilterSet):
         model = Card
         fields = (
             'uuid',
+            'reason',
+            'source',
+            'last_status',
             'leader_id',        # идентификатор пользователя
             'event_uuid',       # идентификатор мероприятия
             'type',             # тип карточки
@@ -64,7 +67,9 @@ class CardViewSet(
     # permission_classes = (HasAPIKey, )
     permission_classes = (IsAuthenticated, )
 
-    queryset = Card.objects.all()
+    queryset = Card.objects.exclude(
+        last_status__in=Status.PRIVATE_STATUSES
+    ).all()
     serializer_class = CardSerializer
     # filter_backends = (DjangoFilterBackend,)
     filter_class = ListingFilter

@@ -14,12 +14,14 @@ class CardSerializer(serializers.ModelSerializer):
             'uuid',
             'type',             #
             'reason',           #
+            'description',
             'source',           #
             'leader_id',        #
             'incident_dt',
             'event_uuid',
             'place_uuid',
             'status',
+            'last_status',
         )
         read_only_fields = (
             'uuid',
@@ -54,3 +56,11 @@ class CardSerializer(serializers.ModelSerializer):
             })
         #
         return result
+
+    def create(self, validated_data):
+        # 2. post запрос на создание
+        # красной или желтой карточки - создаются в статусе initiated,
+        # если зеленая - то после создания сразу переходит в published
+
+        return super(CardSerializer, self).create(validated_data)
+
