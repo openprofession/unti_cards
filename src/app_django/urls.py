@@ -60,5 +60,10 @@ urlpatterns += [
                        views.AppealDetailAdminView.as_view(),
                        name='appeals-detail-admin'),
 
+                  path('users/search',
+                       views.SearchView.as_view(),
+                       name='users-search'),
+
+
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

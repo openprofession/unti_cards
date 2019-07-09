@@ -203,7 +203,7 @@ class AddCardForm(forms.Form):
             status = models.Status.NAME_INITIATED
         #
 
-        new_card = models.Card.create_new_card(
+        new_card = models.Card.objects.create(
             type=card_type,
             reason=self.cleaned_data.get('reason'),
             description=self.cleaned_data.get('description'),
@@ -552,3 +552,19 @@ class AppealDetailAdminView(ExecutiveMixin, BaseAppealsView, PermissionRequiredM
 
 
 # ############################################################################ #
+
+class SearchView(TemplateView):
+    template_name = 'selection-page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchView, self).get_context_data(**kwargs)
+        users = models.User.objects.filter(
+            leader_id__isnull=False,
+        ).order_by(
+            'first_name', 'last_name', 'username'
+        ).all()
+        context.update({
+            'users': users,
+        })
+        return context
+

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<main class="content">
+<section class="section-page">
+  <div class="container">
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Выбор студента</li>
+      </ol>
+    </nav>
+    <h1 class="section-title">Выберите студента</h1>
+    <form class="form-search" action="#" method="get">
+      <div class="row align-items-center">
+
+          {% comment %}
+        <div class="col-md-6">
+          <div class="form-group">
+            <input class="form-control" type="search"
+                   placeholder="Начните вводить имя студента или email"><span class="zoom-icon"></span>
+          </div>
+        </div>
+          {% endcomment %}
+
+<!-- --------------------------------------------------------------------- -->
+
+    <div class="col-md-6">
+      <div class="form-group" style="padding: 0">
+        <select class="selectpicker form-control" id="sls1" data-live-search="true" style="padding: 0!important;">
+            {% for user in users %}
+                <option data-tokens="Аудитория 1">L{{ user.leader_id }} {{ user.get_full_name }}</option>
+            {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-button-group">
+        <div class="form-button-group__item">
+          <button class="btn btn-primary" type="submit">выбрать</button>
+        </div>
+      </div>
+    </div>
+
+<!-- --------------------------------------------------------------------- -->
+
+
+        <div class="col-md-6">
+{#          <div class="label-id">ID 123456</div>#}
+        </div>
+      </div>
+    </form>
+    <div class="users-list">
+      <div class="users-list__item">
+        <div class="row align-items-center">
+          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
+              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+          <div class="col-md-3">
+            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="users-list__item">
+        <div class="row align-items-center">
+          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
+              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+          <div class="col-md-3">
+            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="users-list__item">
+        <div class="row align-items-center">
+          <div class="col-md-9"><a class="user-name user-link" href="selected-form.html">
+              <div class="user-name__value">Дмитрий Иванов</div><span class="user-name__id user-id">ID 12345</span></a></div>
+          <div class="col-md-3">
+            <div class="user-email align--right"><a href="mailto:alex.rtr@gmail.com">alex.rtr@gmail.com</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+{% endblock %}
