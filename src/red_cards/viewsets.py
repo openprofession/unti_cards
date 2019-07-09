@@ -73,3 +73,12 @@ class CardViewSet(
     serializer_class = CardSerializer
     # filter_backends = (DjangoFilterBackend,)
     filter_class = ListingFilter
+    
+    # def get_serializer(self, *args, **kwargs):
+    #     serializer = super(CardViewSet, self).get_serializer(*args, **kwargs)
+    #     return serializer
+    #
+    # def create(self, request, *args, **kwargs):
+    #     response = super(CardViewSet, self).create(request, *args, **kwargs)
+    #     return response
+

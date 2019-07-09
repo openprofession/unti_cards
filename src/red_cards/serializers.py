@@ -62,5 +62,20 @@ class CardSerializer(serializers.ModelSerializer):
         # красной или желтой карточки - создаются в статусе initiated,
         # если зеленая - то после создания сразу переходит в published
 
+        if validated_data['type'] in (
+            Card.TYPE_RED,
+            Card.TYPE_YELLOW,
+        ):
+            validated_data['status'] = models.Status.NAME_INITIATED
+        elif validated_data['type'] == models.Card.TYPE_GREEN:
+            validated_data['status'] = models.Status.NAME_PUBLISHED
+        #
+
+        validated_data['user'] = self.context['request'].user
+        validated_data['system'] = models.Status.SYSTEM_API
+
         return super(CardSerializer, self).create(validated_data)
 
+    def save(self, **kwargs):
+        obj = super(CardSerializer, self).save(**kwargs)
+        return obj
