@@ -1,7 +1,15 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 {% load bootstrap_pagination %}
-
+{% block page_css %}
+<style>
+.search_block{
+    padding: 0 !important;
+    font-size: 14pt!important;
+    height: 30px!important;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 <main class="content">
@@ -30,7 +38,7 @@
 
     <div class="col-md-6">
       <div class="form-group" style="padding: 0">
-        <select class="selectpicker form-control" id="sls1"
+        <select class="selectpicker form-control search_block" id="sls1"
                 data-live-search="true" style="padding: 0!important;"
                 name="user"
         >
@@ -64,13 +72,13 @@
       <div class="users-list__item">
         <div class="row align-items-center">
           <div class="col-md-4">
-              <a class="user-name user-link" href="#">
+              <a class="user-name user-link" href="{% url 'card-add' leader_id=user.leader_id %}" target="_blank">
               <div class="user-name__value">{{ user.get_full_name }}</div>
               <span class="user-name__id user-id">ID {{ user.leader_id }}</span></a>
           </div>
           <div class="col-md-4">
-              <a class="btn btn-outline-primary" target="_blank"
-                 href="{% url 'card-add' leader_id=user.leader_id %}" type="submit">Выдать карточку</a>
+{#              <a class="btn btn-outline-primary" target="_blank"#}
+{#                 href="{% url 'card-add' leader_id=user.leader_id %}" type="submit">Выдать карточку</a>#}
           </div>
           <div class="col-md-4">
             <div class="user-email align--right"><a href="mailto:{{ user.email }}">{{ user.email }}</a></div>
