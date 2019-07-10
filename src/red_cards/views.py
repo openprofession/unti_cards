@@ -159,6 +159,7 @@ class AddCardForm(forms.Form):
             ('101', 'Погреб'),
             ('102', 'Кабинет директора'),
         ),
+        required=False,
     )
     date = forms.DateTimeField(
         label=_('Выберите дату'),
