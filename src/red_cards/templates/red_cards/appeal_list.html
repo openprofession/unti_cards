@@ -4,7 +4,7 @@
 {% block content %}
     <nav class="breadcrumb-nav" aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
+        <li class="breadcrumb-item"><a href="/">Главная</a></li>
         <li class="breadcrumb-item active" aria-current="page">Заявки</li>
       </ol>
     </nav>
@@ -13,6 +13,7 @@
         <h1 class="section-title">Заявки</h1>
       </div>
       <div class="col-md-7">
+          {% comment %}
         <form class="form-filter">
           <div class="row align-items-center">
             <div class="col-md-6">
@@ -34,6 +35,8 @@
             </div>
           </div>
         </form>
+          {% endcomment %}
+
       </div>
     </div>
     <div class="users-list">

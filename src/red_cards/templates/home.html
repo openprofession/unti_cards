@@ -14,6 +14,7 @@
 </a>
     </div>
 {% else %}
+
       <h1 class="section-title">Мои инциденты</h1>
       <div class="section-block">
 
@@ -43,6 +44,21 @@
               </div>
             </div>
           </div>
+
+        {% if not statuses_bad %}
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                       <p style="padding: 0 0 25px 20px;">
+                  Здесь фиксируются прогулы лекций и нарушения общественного порядка.
+                           <br>На данный момент инцидентов у вас нет, так держать!
+
+                       </p>
+
+              </div>
+            </div>
+          </div>
+        {% endif %}
 
           {% for status in statuses_bad %}
           <div class="section-block__item">
@@ -149,6 +165,21 @@
             </div>
           </div>
 
+        {% if not statuses_good %}
+          <div class="section-block__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                       <p style="padding: 0 0 25px 20px;">
+                  Зеленые карточки выдаются за достигнутые на Острове успехи.
+                           <br>На данный момент зеленых карточек у вас нет.
+
+
+                       </p>
+
+              </div>
+            </div>
+          </div>
+        {% endif %}
           {% for status in statuses_good %}
           <div class="section-block__item">
             <!--

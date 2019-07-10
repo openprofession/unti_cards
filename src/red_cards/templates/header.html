@@ -2,16 +2,22 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-4 col-md-5 col-6">
-                <div class="logo-wrap"><a class="logo" href="/"><img class="img-fluid logo-img"
-                                                                     src="/static/img/logo.svg"
-                                                                     alt="">
-                    <div class="logo-text">Красные карточки<br>на Острове</div>
+                <div class="logo-wrap"><a class="logo" href="/">
+                    <img class="img-fluid logo-img"
+                         src="/static/img/logo_nti.png"
+                         style="width: auto"
+                         alt="">
+                    <div class="logo-text" style="padding-left: 70px">Красные карточки<br>на Острове</div>
                 </a></div>
             </div>
             <div class="col-lg-8 col-md-7 col-6">
                 <div class="header-links-grid">
 
-                    <div class="header-links-grid__item"><a class="header-link" href="#">Помощь</a></div>
+{#                    <div class="header-links-grid__item"><a class="header-link" href="#">Помощь</a></div>#}
+
+                    {% if request.user.is_assistant %}
+                        <div class="header-links-grid__item"><a class="header-link" href="{% url 'users-search' %}">Выдать карточку</a></div>
+                {% endif %}
                     {% if request.user.is_authenticated %}
                         <div class="header-links-grid__item">{{ request.user.get_full_name }}</div>
                         <div class="header-links-grid__item">

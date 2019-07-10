@@ -6,8 +6,8 @@
 <div class="container">
 <nav class="breadcrumb-nav" aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="index.html">Главная</a></li>
-    <li class="breadcrumb-item"><a href="selection-page.html">Выбор студента</a></li>
+    <li class="breadcrumb-item"><a href="/">Главная</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'users-search' %}">Выбор студента</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ target_user.get_full_name }}</li>
   </ol>
 </nav>
@@ -81,10 +81,13 @@
           </div>
         </div>
         <div class="col-md-6">
+            {% comment %}
           <div class="form-group">
               {{ form.classroom.label_tag }}
               {{ form.classroom|attr:"class:form-control selectpicker" }}
           </div>
+            {% endcomment %}
+
         </div>
         <div class="col-md-4">
           <div class="form-group">
