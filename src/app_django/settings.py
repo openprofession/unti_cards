@@ -215,3 +215,123 @@ FILE_UPLOAD_HANDLERS = (
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 )
+
+# ############################################################################ #
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG').strip().upper()
+
+if DEBUG:
+    LOG_LEVEL = 'DEBUG'
+#
+
+LOG_DIR = os.path.join(BASE_DIR, 'log')
+if not os.path.exists(LOG_DIR):
+    os.mkdir(LOG_DIR)
+#
+
+
+# output-format
+# https://docs.python.org/2/library/logging.html#logrecord-attributes
+LOG_FORMAT = (
+    '%(asctime)s |'
+    '%(thread)s |'
+    # '[ %(pathname)-110s ]'
+    '%(module)-20s '  # python.module.path
+    '%(lineno)4d | '  # code line-number
+    '%(funcName)-20s '
+    # '| %(name)-25s '                    # logging-name
+    '%(levelname)-7s'
+    ' :    %(message)s'
+)
+_datetime_format = '%m.%d %H:%M:%S'
+
+_KB = 1024
+_MB = _KB * 1024
+
+# https://docs.djangoproject.com/en/2.1/topics/logging/#examples
+# https://lincolnloop.com/blog/django-logging-right-way/
+APP_NAME = 'django_cards'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'class':    'logging.Formatter',
+            'format':   LOG_FORMAT,
+            'datefmt':  _datetime_format,
+        },
+        # 'detail_trice': {
+        #     'class':    'jen_tools.common.logging.DetailFormatter',
+        #     'format':   LOG_FORMAT,
+        #     'datefmt':  _datetime_format,
+        # },
+    },
+
+    'handlers': {
+        'console': {
+            'class':        'logging.StreamHandler',
+            'level':        'DEBUG',
+            'formatter':    'verbose'
+        },
+        'file_debug': {
+            'class':        'logging.handlers.RotatingFileHandler',
+            'level':        'DEBUG',
+            'formatter':    'verbose',
+            'filename':     os.path.join(
+                LOG_DIR, '{}.django.debug.log'.format(APP_NAME)),
+            'mode':         'a',
+            'encoding':     'utf-8',
+            'maxBytes':     _MB * 10,
+            'backupCount':  1,
+        },
+        'file_error': {
+            'class':        'logging.handlers.RotatingFileHandler',
+            'level':        'ERROR',
+            'formatter':    'verbose',
+            'filename':     os.path.join(
+                LOG_DIR, '{}.django.error.log'.format(APP_NAME)),
+            'mode':         'a',
+            'encoding':     'utf-8',
+            'maxBytes':     _MB * 10,
+            'backupCount':  1,
+        },
+        # 'file_error_detail_trice': {
+        #     'class':        'logging.handlers.RotatingFileHandler',
+        #     'level':        'ERROR',
+        #     'formatter':    'detail_trice',
+        #     'filename':     os.path.join(
+        #         LOG_DIR, '{}.django.error.detail.log'.format(APP_NAME)),
+        #     'mode':         'a',
+        #     'encoding':     'utf-8',
+        #     'maxBytes':     _MB * 10,
+        #     'backupCount':  1,
+        # },
+        # 'db_log': {
+        #     'level':        'WARNING',
+        #     'formatter':    'detail_trice',
+        #     'class':        'django_db_logger.handlers.DatabaseLogHandler'
+        # },
+    },
+
+    'loggers': {
+        '': {
+            'handlers':     [
+                'console',
+                'file_debug',
+                'file_error',
+                # 'file_error_detail_trice',
+                # 'db_log',
+            ],
+            'level':        'INFO' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        # - - -
+        'app_django':       {'level': LOG_LEVEL, 'propagate': True, },
+        'red_cards':       {'level': LOG_LEVEL, 'propagate': True, },
+
+        'workers':           {'level': LOG_LEVEL, 'propagate': True, },
+    },
+}
+
+# ############################################################################ #
