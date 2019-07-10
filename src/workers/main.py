@@ -69,7 +69,7 @@ def eliminate_cards():
 # ############################################################################ #
 def main():
     while True:
-        time.sleep(1)
+        time.sleep(10)
         eliminate_cards()
         print('+')
 #
