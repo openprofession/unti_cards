@@ -52,6 +52,19 @@ class User(AbstractUser):
     def get_full_name(self):
         return ' '.join(filter(None, [self.last_name, self.first_name]))
 
+    def get_count_issued_red_cards(self):
+        return Card.objects.filter(
+            leader_id=self.leader_id,
+            last_status=Status.NAME_ISSUED,
+            type=Card.TYPE_RED
+        ).count()
+
+    def get_count_issued_yellow_cards(self):
+        return Card.objects.filter(
+            leader_id=self.leader_id,
+            last_status=Status.NAME_ISSUED,
+            type=Card.TYPE_YELLOW
+        ).count()
 
 class Status(models.Model):
     class Meta:
@@ -88,6 +101,7 @@ class Status(models.Model):
     SYSTEM_CARDS_TRANSFORM = 'cards-transform'
     SYSTEM_CARDS_REPAYMENT = 'cards-repayment'
     SYSTEM_EXPERIMENTS = 'experiments'
+    SYSTEM_CARDS_MODERATOR = 'cards-moderator'
     SYSTEM_CHOICES = (
 
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
@@ -99,6 +113,7 @@ class Status(models.Model):
         (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
         (SYSTEM_CARDS_REPAYMENT, _('Cards-repayment')),
         (SYSTEM_EXPERIMENTS, _('Experiments')),
+        (SYSTEM_CARDS_MODERATOR, _('Cards-moderator'))
     )
     system = models.CharField(  # источник изменения статуса
         verbose_name=_('System'),

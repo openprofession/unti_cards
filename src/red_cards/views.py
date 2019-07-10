@@ -236,7 +236,7 @@ class RolePermissionMixin(PermissionRequiredMixin):
     )
 
     def has_permission(self):
-        if self.request.user:
+        if self.request.user and not self.request.user.is_anonymous:
             if self.request.user.is_assistant:
                 return True
         #   #
@@ -248,13 +248,9 @@ class AddCardAdminFormView(RolePermissionMixin, LoginRequiredMixin, FormView):
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
-    def get_target_user(self):
-        # get_object_or_404(Product, slug=self.kwargs['slug']
-        return models.User.objects.get(leader_id=self.kwargs['leader_id'])
-
     def get_context_data(self, **kwargs):
         context = super(AddCardAdminFormView, self).get_context_data(**kwargs)
-        user = self.get_target_user()
+        user = models.User.objects.get(leader_id=self.kwargs['leader_id'])
         assert isinstance(user, models.User)
         form = context['form']
         assert isinstance(form, AddCardForm)
@@ -607,4 +603,58 @@ class SearchView(RolePermissionMixin, TemplateView):
             # 'by_search':        by_search,
         })
         return context
+
+
+class RecommendedCardsView(RolePermissionMixin, TemplateView):
+    """
+
+    """
+    template_name = 'approved.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(RecommendedCardsView, self).get_context_data(**kwargs)
+        cards = models.Card.objects.filter(
+            type__in=(models.Card.TYPE_YELLOW, models.Card.TYPE_RED),
+        ).all()
+        context.update({
+            'cards': cards,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        card = models.Card.objects.filter(
+            pk=self.request.POST.get('card')
+        ).first()
+        if card is None:
+            messages.error(request, 'Карточка не найдена в базе данных')
+            return self.get(request, *args, **kwargs)
+        #
+        assert isinstance(card, models.Card)
+        #
+
+        if card.last_status not in (models.Status.NAME_INITIATED, models.Status.NAME_RECOMMENDED):
+            messages.error(request, 'Карточку уже изменина')
+            return self.get(request, *args, **kwargs)
+        #
+
+        action = self.request.POST.get('action')
+        if action == 'accept':
+            card.set_status(
+                name=models.Status.NAME_PUBLISHED,
+                system=models.Status.SYSTEM_CARDS_MODERATOR,
+                user=request.user
+            )
+            messages.error(request, 'Карточка "{}" одобрена'.format(card.reason))
+        elif action == 'reject':
+            card.set_status(
+                name=models.Status.NAME_REJECTED,
+                system=models.Status.SYSTEM_CARDS_MODERATOR,
+                user=request.user
+            )
+            messages.error(request, 'Карточка "{}" отклонена'.format(card.reason))
+
+        else:
+            return self.get(request, *args, **kwargs)  # if hacker
+        #
+        return self.get(request, *args, **kwargs)
 
