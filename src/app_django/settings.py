@@ -27,7 +27,7 @@ print('The .env file has been loaded. See base.py for more information')
 SECRET_KEY = 'cgju4#-d_ewl!vt$t=!hh+0!jpqk+teyo$kwl1v(6$boob2st='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DJANGO_DEBUG', False)
+DEBUG = env.bool('DJANGO_DEBUG', True)
 
 ALLOWED_HOSTS = ['*', ]
 
@@ -167,6 +167,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 
 
 # https://docs.djangoproject.com/en/2.2/ref/settings/#datetime-input-formats
