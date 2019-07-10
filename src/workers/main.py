@@ -2,8 +2,10 @@
 import os
 import sys
 import time
-
+import logging
 SELF_DIR = os.path.abspath(os.path.dirname(__file__))
+
+log = logging.getLogger(__name__)
 
 
 def init_django():
@@ -39,7 +41,7 @@ def eliminate_cards():
         #
         assert isinstance(status, models.Status)
         if status.change_dt < (timezone.now() - timezone.timedelta(hours=24)):
-            print('NAME_ELIMINATED: {}'.format(card))
+            log.info('NAME_ELIMINATED: {}'.format(card))
             card.set_status(
                 name=models.Status.NAME_ELIMINATED
             )
@@ -59,7 +61,7 @@ def eliminate_cards():
         #
         assert isinstance(status, models.Status)
         if status.change_dt < (timezone.now() - timezone.timedelta(hours=24)):
-            print('NAME_ISSUED: {}'.format(card))
+            log.info('NAME_ISSUED: {}'.format(card))
             card.set_status(
                 name=models.Status.NAME_ISSUED
             )
@@ -68,19 +70,33 @@ def eliminate_cards():
 
 # ############################################################################ #
 def main():
+    log.info('start up {}'.format(timezone.now()))
     while True:
-        time.sleep(10)
-        eliminate_cards()
-        print('+')
-#
+        try:
+            time.sleep(10)
+            log.debug('handle cards {}'.format(timezone.now()))
+            eliminate_cards()
+            log.debug('sleep +10s {}'.format(timezone.now()))
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            log.error(e)
+            time.sleep(60)
+#   #   #
 
 
 if __name__ == '__main__':
-    with open('_worker.temp', 'a+') as file:
-        file.write('up: {}'.format(timezone.now()))
     #
+    logging.getLogger('').setLevel(logging.DEBUG)
+    logging.getLogger('').addHandler(
+        logging.FileHandler(
+            filename='worker.log'
+        )
+    )
+    logging.getLogger('').addHandler(logging.StreamHandler(sys.stdout))
     try:
         main()
+        #
     except KeyboardInterrupt:
         pass
     #
