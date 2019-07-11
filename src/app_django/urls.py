@@ -34,6 +34,7 @@ if settings.DEBUG:
 
 urlpatterns += [
                   path('', include('social_django.urls', namespace='social')),
+                  path('help/', views.HelpView.as_view(), name='help'),
                   path('logout/', views.logout, name='logout'),
                   path('admin/', admin.site.urls),
                   path('api-auth/', include('rest_framework.urls')),

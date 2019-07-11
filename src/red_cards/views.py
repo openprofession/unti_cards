@@ -17,6 +17,11 @@ from django.views.generic import FormView, TemplateView
 
 from django import forms
 
+
+class HelpView(TemplateView):
+    template_name = 'help.html'
+
+
 _sql_get_cards = """
     SELECT card.*, st.* from red_cards_status  as st
     INNER JOIN red_cards_card as card
