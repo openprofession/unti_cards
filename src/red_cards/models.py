@@ -66,6 +66,7 @@ class User(AbstractUser):
             type=Card.TYPE_YELLOW
         ).count()
 
+
 class Status(models.Model):
     class Meta:
         verbose_name = _('Status')
@@ -102,6 +103,7 @@ class Status(models.Model):
     SYSTEM_CARDS_REPAYMENT = 'cards-repayment'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CARDS_MODERATOR = 'cards-moderator'
+    SYSTEM_NOT_SET = 'undefined'
     SYSTEM_CHOICES = (
 
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
@@ -113,7 +115,9 @@ class Status(models.Model):
         (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
         (SYSTEM_CARDS_REPAYMENT, _('Cards-repayment')),
         (SYSTEM_EXPERIMENTS, _('Experiments')),
-        (SYSTEM_CARDS_MODERATOR, _('Cards-moderator'))
+        (SYSTEM_CARDS_MODERATOR, _('Cards-moderator')),
+
+        (SYSTEM_NOT_SET, _('Undefined')),
     )
     system = models.CharField(  # источник изменения статуса
         verbose_name=_('System'),
@@ -357,12 +361,23 @@ class Card(models.Model):
             name=name,
         )
 
-    def get_status(self):
-        return Status.objects.filter(
+    def get_status(self, force=False):
+        # fixme: joint with last_status as fk
+        status = getattr(self, '_current_status',  None)
+        if force and status:
+            return status
+        #
+        status = Status.objects.filter(
             card=self,
         ).order_by(
             '-change_dt'
         ).first()
+        setattr(self, '_current_status', status)
+        if not status:
+            self.set_status(system=Status.SYSTEM_NOT_SET)
+            return self.get_status()
+        #
+        return status
 
     def get_user(self):
         return User.objects.filter(

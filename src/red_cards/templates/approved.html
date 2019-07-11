@@ -14,32 +14,36 @@
     </nav>
     <div class="row align-items-center">
       <div class="col-md-5">
-        <h1 class="section-title">Все инциденты</h1>
+        <h1 class="section-title">Все инциденты ({{ cards.count }})</h1>
       </div>
       <div class="col-md-7">
-        <form class="form-filter">
+
+
+        <form class="form-filter" action="" METHOD="GET">
+{#            {% csrf_token %}#}
           <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-5">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.status|attr:"class:form-control selectpicker"}}
+                </div>
+            </div>
+            <div class="col-md-5">
               <div class="form-group">
-                <select class="selectpicker form-control" title="По статусу">
-                  <option>Одобрена</option>
-                  <option>Опубликована</option>
-                  <option>Отклонена</option>
-                  <option>На рассмотрении</option>
-                  <option>Деактивирована</option>
-                </select>
+{#              {{ filters_form.date.label_tag }}#}
+              {{ filters_form.date|attr:"class:form-control selectpicker"}}
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-2">
               <div class="form-group">
-                <select class="selectpicker form-control" title="По дате">
-                  <option>Сначала новые записи</option>
-                  <option>Сначала старые записи</option>
-                </select>
-              </div>
+                <button class="btn btn-outline-info" type="submit" style="min-width: auto;">ок</button>
+            </div>
             </div>
           </div>
         </form>
+
+
+
       </div>
     </div>
     <div class="users-list">
@@ -85,8 +89,8 @@ color: #fff;">
                                         {{ card.get_user.get_count_issued_red_cards }}
 
                                     </span>
-
-                    <span class="label label-success" style="opacity: 0.6; background-color: #FCD70B; border-radius: 0.25em; padding: 0 10px !important;
+<span class="label label-danger"></span>
+                    <span class="label label-success" style="opacity: 0.6; background-color: #A48B04; margin-left: 10px; border-radius: 0.25em; padding: 0 10px !important;
 color: #fff;">
                                         {{ card.get_user.get_count_issued_yellow_cards }}
 

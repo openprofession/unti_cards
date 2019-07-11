@@ -604,6 +604,42 @@ class SearchView(RolePermissionMixin, TemplateView):
         })
         return context
 
+# ############################################################################ #
+
+
+class RecommendedCardsFilterForm(forms.Form):
+    status = forms.ChoiceField(
+        label=_('Выберите статус карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По статусу'),
+        }),
+        choices=(
+            (models.Status.NAME_APPROVED,       _('Одобрена')),
+            (models.Status.NAME_REJECTED,       _('Отклонена')),
+            (models.Status.NAME_PUBLISHED,      _('Опубликована')),
+            (models.Status.NAME_CONSIDERATION,  _('На рассмотрении')),
+            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
+            ('',       _('Показать все')),
+        ),
+        required=False,
+    )
+    DATE_NEW = 'new'
+    DATE_OLD = 'old'
+    date = forms.ChoiceField(
+        label=_('Выберите время изменения карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По дате'),
+        }),
+        choices=(
+            (DATE_NEW, _('Сначала новые записи')),
+            (DATE_OLD, _('Сначала старые записи')),
+            ('',       _('Показать все')),
+        ),
+        required=False,
+    )
+
 
 class RecommendedCardsView(RolePermissionMixin, TemplateView):
     """
@@ -613,11 +649,27 @@ class RecommendedCardsView(RolePermissionMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(RecommendedCardsView, self).get_context_data(**kwargs)
+
         cards = models.Card.objects.filter(
             type__in=(models.Card.TYPE_YELLOW, models.Card.TYPE_RED),
         ).all()
+
+        filters_form = RecommendedCardsFilterForm(self.request.GET)
+        if filters_form.is_valid():
+            filters = filters_form.cleaned_data
+            if filters.get('status', ''):
+                cards = cards.filter(last_status=filters['status'])
+            #
+            if filters.get('date', '') == filters_form.DATE_NEW:
+                cards = cards.order_by('-status__change_dt')
+            #
+            if filters.get('date', '') == filters_form.DATE_OLD:
+                cards = cards.order_by('status__change_dt')
+            #
+        #
         context.update({
-            'cards': cards,
+            'cards':        cards,
+            'filters_form': filters_form,
         })
         return context
 
