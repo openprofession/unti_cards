@@ -111,9 +111,6 @@ class StatusAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
     def save_model(self, request, obj, form, change):
         obj.user = request.user
         obj.save()

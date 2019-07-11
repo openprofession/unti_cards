@@ -12,3 +12,5 @@ media
 .env
 
 log
+
+settings_local.py
