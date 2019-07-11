@@ -124,7 +124,10 @@ def home(request):
         statuses_good_empty = list(range(0, statuses_good_empty_count))
     #
     # ------------------------------------------------------------------------ #
-
+    eliminated_cards = models.Card.objects.filter(
+        last_status=models.Status.NAME_ELIMINATED,
+        leader_id=request.user.leader_id
+    )
     # ------------------------------------------------------------------------ #
     return render(request, template_name="home.html", context=dict(
         statuses_bad=statuses_bad,
@@ -133,6 +136,7 @@ def home(request):
 
         statuses_good=statuses_good,
         statuses_good_empty=statuses_good_empty,
+        eliminated_cards=eliminated_cards
     ))
 
 

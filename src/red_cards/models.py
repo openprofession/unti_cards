@@ -363,7 +363,11 @@ class Card(models.Model):
         delay = (
                         status.change_dt + timezone.timedelta(hours=24)
                 ) - timezone.now()
-        return int(delay.total_seconds())
+        result = int(delay.total_seconds())
+        if result < 0:
+            result = 0
+        #
+        return result
 
 
 class ClassRum(models.Model):

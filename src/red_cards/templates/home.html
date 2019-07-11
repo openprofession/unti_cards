@@ -15,6 +15,21 @@
     </div>
 {% else %}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <h1 class="section-title">Мои инциденты</h1>
       <div class="section-block">
 
@@ -101,6 +116,7 @@
               </div>
               <div class="col-lg-3 col-md-4">
                 <div class="event-panel">
+
                 {% if status.name == status.NAME_PUBLISHED %}
                   <div class="event-panel__item">
                       <a class="btn btn-outline-primary"
@@ -119,6 +135,17 @@
                       </div>
                 {% endif %}
 
+                {% if status.name == status.NAME_ISSUED %}
+                {% if status.card.type == status.card.TYPE_RED %}
+                {% if status.system == status.SYSTEM_CARDS_APPEAL %}
+
+                  <div class="event-panel__item">
+                        <p class="timer-out">Оспаривание отклонено.</p>
+                      </div>
+
+                {% endif %}
+                {% endif %}
+                {% endif %}
                     {% if status.card.type == status.card.TYPE_YELLOW %}
                   <div class="event-panel__item">
                        <p class="event-notice-text">При получении второй желтой карточки вы автоматически получите красную. В ином случае желтая карточка автоматически деактивируется спустя 24 часа с момента ее получения</p>
@@ -236,73 +263,88 @@
     {% endcomment %}
         </div>
 
-    {% comment %}
+
+
+
+    <!-- ---------------------------------------------------------------- -->
+
+
+
+
+
         <h2 class="section-subtitle">Деактивированные карточки</h2>
         <div class="section-block">
-          <div class="section-block__item">
+
+
+        {% for card in eliminated_cards %}
+            <div class="section-block__item">
             <div class="row align-items-center">
               <div class="col-lg-9 col-md-8">
                 <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <h3 class="user-event__title">
+                      {{ card.reason }}
+                      {{ card.incident_dt|date:"d.m.Y" }}</h3>
+                  <div class="user-event__date">зафиксировано {{ card.get_status.change_dt|date:"d.m.Y" }}</div>
                 </div>
                 <div class="card-type">
                   Тип:
-                  <span class="color--red">Красная карточка</span>
+                  <span
+                    {% if card.type == card.TYPE_RED %}
+                          class="color--red"
+                    {% elif card.type == card.TYPE_YELLOW %}
+                          class="color--yellow"
+
+                    {% elif card.type == card.TYPE_GREEN %}
+                          class="color--green"
+
+                    {% else %}
+                          class="color--blue"
+                    {% endif %}
+                  >{{ card.type_verbose }}</span>
                 </div>
               </div>
               <div class="col-lg-3 col-md-4">
                 <div class="event-panel">
                   <div class="event-panel__item">
-                    <div class="event-notice color--green">Успешно оспорена</div>
+                   {% if card.type == card.TYPE_RED  %}
+                       {% if card.get_status.system == card.get_status.SYSTEM_CARDS_CONSIDERATION%}
+                       <div class="event-notice color--green">Успешно оспорена</div>
+                      {% endif %}
+
+                       {% if card.get_status.system == card.get_status.SYSTEM_CARDS_REPAYMENT%}
+                       <div class="event-notice color--blue">Погашена зеленой</div>
+                      {% endif %}
+
+                   {% endif %}
+                  {% if card.type == card.TYPE_YELLOW %}
+                       {% if card.get_status.system == card.get_status.SYSTEM_CARDS_TRANSFORM%}
+                       <div class="event-notice">Перешла в красную</div>
+                           {% else  %}
+                           <div class="event-notice">Деактивирована</div>
+                      {% endif %}
+                  {% endif %}
+                  {% if card.type == card.TYPE_GREEN %}
+                       {% if card.get_status.system == card.get_status.SYSTEM_CARDS_REPAYMENT %}
+                       <div class="event-notice color--red">Потрачена на погашение красной карточки</div>
+                      {% endif %}
+                  {% endif %}
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="section-block__item">
-            <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
-                <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                </div>
-                <div class="card-type">
-                  Тип:
-                  <span class="color--yellow">Желтая карточка</span>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4">
-                <div class="event-panel">
-                  <div class="event-panel__item">
-                    <div class="event-notice">Деактивирована</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="section-block__item">
-            <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
-                <div class="user-event">
-                  <h3 class="user-event__title">Прогул лекции «Тренды в сборе» 10.07.2019</h3>
-                  <div class="user-event__date">зафиксировано 11.07.2019</div>
-                </div>
-                <div class="card-type">
-                  Тип:
-                  <span class="color--red">Красная карточка</span>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4">
-                <div class="event-panel">
-                  <div class="event-panel__item">
-                    <div class="event-notice color--blue">Погашена</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {% endfor %}
+
+
+    <!-- ---------------------------------------------------------------- -->
+
+
+
+
+
+
+    {% comment %}
         <h2 class="section-title">Доска позора</h2>
         <div class="users-list">
           <div class="users-list__item">
