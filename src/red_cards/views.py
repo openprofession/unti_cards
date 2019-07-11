@@ -696,14 +696,14 @@ class RecommendedCardsView(RolePermissionMixin, TemplateView):
                 system=models.Status.SYSTEM_CARDS_MODERATOR,
                 user=request.user
             )
-            messages.error(request, 'Карточка "{}" одобрена'.format(card.reason))
+            messages.success(request, 'Карточка "{}" одобрена'.format(card.reason))
         elif action == 'reject':
             card.set_status(
                 name=models.Status.NAME_REJECTED,
                 system=models.Status.SYSTEM_CARDS_MODERATOR,
                 user=request.user
             )
-            messages.error(request, 'Карточка "{}" отклонена'.format(card.reason))
+            messages.success(request, 'Карточка "{}" отклонена'.format(card.reason))
 
         else:
             return self.get(request, *args, **kwargs)  # if hacker
