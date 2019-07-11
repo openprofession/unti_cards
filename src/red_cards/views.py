@@ -213,7 +213,7 @@ class AddCardForm(forms.Form):
             incident_dt=self.cleaned_data.get('date'),
             leader_id=self.cleaned_data.get('leader_id'),
 
-            system=models.Status.SYSTEM_LEADER,
+            system=models.Status.SYSTEM_CARDS_ASSISTANT,
             status=status,
             user=user,
         )

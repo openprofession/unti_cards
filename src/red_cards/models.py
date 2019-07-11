@@ -79,15 +79,21 @@ class Status(models.Model):
         on_delete=models.CASCADE,
         null=True, blank=True,
     )
+    SYSTEM_CARDS_ASSISTANT = 'cards-assistant'          # 4 Ассистент выдает карточку
+    SYSTEM_CARDS_CONSIDERATION = 'cards-consideration'  # 5 Участник оспаривает карточку
+    SYSTEM_CARDS_APPEAL = 'cards-appeal'                # 6 Модератор апрувит/отклоняет оспаривание
 
-    SYSTEM_CARDS = 'cards'
     SYSTEM_API = 'api'
     SYSTEM_LEADER = 'leader'
     SYSTEM_CARDS_TRANSFORM = 'cards-transform'
     SYSTEM_CARDS_REPAYMENT = 'cards-repayment'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CHOICES = (
-        (SYSTEM_CARDS, _('Cards')),
+
+        (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
+        (SYSTEM_CARDS_CONSIDERATION, _('Cards-consideration')),
+        (SYSTEM_CARDS_APPEAL, _('Cards-appeal')),
+
         (SYSTEM_API, _('Api')),
         (SYSTEM_LEADER, _('Leader')),
         (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
@@ -164,7 +170,8 @@ class CardManager(models.Manager):
             self, *,
             type, reason, description=None, source, leader_id,
             incident_dt=None, event_uuid=None, place_uuid=None,
-            system=Status.SYSTEM_CARDS, status=Status.NAME_INITIATED,
+            system=Status.SYSTEM_CARDS_ASSISTANT,
+            status=Status.NAME_INITIATED,
             user=None,
             **kwargs
 
@@ -325,7 +332,7 @@ class Card(models.Model):
 
     def set_status(
             self, *,
-            system=Status.SYSTEM_CARDS, name=Status.NAME_INITIATED,
+            system, name=Status.NAME_INITIATED,
             user=None,
     ):
         Status.objects.create(
@@ -445,7 +452,7 @@ class Appeal(models.Model):
         )
         card.set_status(
             name=Status.NAME_CONSIDERATION,
-            system=Status.SYSTEM_LEADER,
+            system=Status.SYSTEM_CARDS_CONSIDERATION,
             user=user,
         )
         return new_appeal
@@ -465,6 +472,7 @@ class Appeal(models.Model):
     def accept(self, user):
         self.card.set_status(
             name=Status.NAME_ELIMINATED,
+            system=Status.SYSTEM_CARDS_APPEAL,
             user=user
         )
         self.status = self.STATUS_APPROVED
@@ -475,6 +483,7 @@ class Appeal(models.Model):
     def reject(self, user):
         self.card.set_status(
             name=Status.NAME_ISSUED,
+            system=Status.SYSTEM_CARDS_APPEAL,
             user=user
         )
         self.status = self.STATUS_REJECTED
