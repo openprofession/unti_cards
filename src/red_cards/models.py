@@ -354,6 +354,17 @@ class Card(models.Model):
             leader_id=self.leader_id,
         ).first()
 
+    def get_seconds_for_appellation(self):  # appellation
+        status = self.get_status()
+        if not status:
+            return 0
+        #
+        assert isinstance(status, Status)
+        delay = (
+                        status.change_dt + timezone.timedelta(hours=24)
+                ) - timezone.now()
+        return int(delay.total_seconds())
+
 
 class ClassRum(models.Model):
     uuid = models.UUIDField(

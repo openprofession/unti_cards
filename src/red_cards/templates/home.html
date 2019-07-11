@@ -108,7 +108,7 @@
                   </div>
                     <div class="event-panel__item">
                         <div class="timer">
-                          <div class="timer__title">на обжалование осталось 24 часа</div>
+                          <div class="timer__title">на обжалование осталось <span id='timer-{{  status.card.uuid }}'></span></div>
                           <div class="timer__clock" id="timer1"></div>
                         </div>
                       </div>
@@ -386,4 +386,21 @@
     {% endcomment %}
 {% endif %}
 
+{% endblock %}
+
+
+{% block page_js %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    {% for status in statuses_bad %}
+        $('#timer-{{ status.card.uuid }}').backward_timer({
+            seconds: {{ status.card.get_seconds_for_appellation }},
+            format: 'h% часа m% минут',
+        });
+        $('#timer-{{ status.card.uuid }}').backward_timer('start');
+    {% endfor %}
+})
+</script>
 {% endblock %}
