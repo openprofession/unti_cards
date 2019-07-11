@@ -580,7 +580,7 @@ def update_stock(sender, instance, **kwargs):
     #
     card = instance.card
     #
-    if type == card.TYPE_YELLOW:
+    if card.type == card.TYPE_YELLOW:
         with transaction.atomic():
             yellow_cards = Card.objects.filter(
                 type=Card.TYPE_YELLOW,
