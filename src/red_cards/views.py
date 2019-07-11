@@ -483,6 +483,39 @@ class ExecutiveMixin:
         return self.get(request, *args, **kwargs)
 
 
+class AppealListFilterForm(forms.Form):
+    status = forms.ChoiceField(
+        label=_('Выберите статус карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По статусу'),
+        }),
+        choices=(
+            (models.Appeal.STATUS_NEW,       _('Не просмотрено')),
+            (models.Appeal.STATUS_IN_WORK,   _('На рассмотрении')),
+            (models.Appeal.STATUS_REJECTED,  _('Отказ')),
+            (models.Appeal.STATUS_APPROVED,  _('Принято')),
+            ('',       _('Показать все')),
+        ),
+        required=False,
+    )
+    DATE_NEW = 'new'
+    DATE_OLD = 'old'
+    date = forms.ChoiceField(
+        label=_('Выберите время изменения карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По дате'),
+        }),
+        choices=(
+            (DATE_NEW, _('Сначала новые записи')),
+            (DATE_OLD, _('Сначала старые записи')),
+            ('',       _('Показать все')),
+        ),
+        required=False,
+    )
+
+
 class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_list.html'
 
@@ -491,7 +524,22 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         appeals = models.Appeal.objects.all().order_by(
             '-create_dt'
         )
+
+        filters_form = AppealListFilterForm(self.request.GET)
+        if filters_form.is_valid():
+            filters = filters_form.cleaned_data
+            if filters.get('status', ''):
+                appeals = appeals.filter(status=filters['status'])
+            #
+            if filters.get('date', '') == filters_form.DATE_NEW:
+                appeals = appeals.order_by('-create_dt')
+            #
+            if filters.get('date', '') == filters_form.DATE_OLD:
+                appeals = appeals.order_by('create_dt')
+            #
+        #
         context.update({
+            'filters_form': filters_form,
             'appeals': appeals,
         })
         return context

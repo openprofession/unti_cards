@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 
 {% block content %}
@@ -13,29 +14,30 @@
         <h1 class="section-title">Заявки</h1>
       </div>
       <div class="col-md-7">
-          {% comment %}
-        <form class="form-filter">
+
+
+
+        <form class="form-filter" class="form-filter" action="" METHOD="GET">
           <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-5">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.status|attr:"class:form-control selectpicker"}}
+                </div>
+            </div>
+            <div class="col-md-5">
               <div class="form-group">
-                <select class="selectpicker form-control" title="По статусу">
-                  <option>Не просмотрено</option>
-                  <option>Отказ</option>
-                  <option>Принято</option>
-                </select>
+{#              {{ filters_form.date.label_tag }}#}
+              {{ filters_form.date|attr:"class:form-control selectpicker"}}
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-2">
               <div class="form-group">
-                <select class="selectpicker form-control" title="По дате">
-                  <option>Сначала новые записи</option>
-                  <option>Сначала старые записи</option>
-                </select>
-              </div>
+                <button class="btn btn-outline-info" type="submit" style="min-width: auto;">ок</button>
+            </div>
             </div>
           </div>
         </form>
-          {% endcomment %}
 
       </div>
     </div>
