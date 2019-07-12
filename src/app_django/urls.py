@@ -69,6 +69,10 @@ urlpatterns += [
                        views.RecommendedCardsView.as_view(),
                        name='recommended-cards'),
 
+                  path('cards/approved',
+                       views.ApprovedCardsView.as_view(),
+                       name='cards-approved'),
+
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

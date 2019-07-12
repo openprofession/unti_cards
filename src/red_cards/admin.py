@@ -75,7 +75,8 @@ class CardAdmin(admin.ModelAdmin):
         'incident_dt',
         'event_uuid',
         'place_uuid',
-        'last_status'
+        'last_status',
+        'status',
     )
 
     def _status(self, obj):

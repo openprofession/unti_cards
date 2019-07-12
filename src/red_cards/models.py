@@ -96,6 +96,7 @@ class Status(models.Model):
     SYSTEM_CARDS_ASSISTANT = 'cards-assistant'          # 4 Ассистент выдает карточку
     SYSTEM_CARDS_CONSIDERATION = 'cards-consideration'  # 5 Участник оспаривает карточку
     SYSTEM_CARDS_APPEAL = 'cards-appeal'                # 6 Модератор апрувит/отклоняет оспаривание
+    SYSTEM_CARDS_ADMIN = 'cards-admin'
 
     SYSTEM_API = 'api'
     SYSTEM_LEADER = 'leader'
@@ -109,6 +110,7 @@ class Status(models.Model):
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
         (SYSTEM_CARDS_CONSIDERATION, _('Cards-consideration')),
         (SYSTEM_CARDS_APPEAL, _('Cards-appeal')),
+        (SYSTEM_CARDS_ADMIN, _('Cards-admin')),
 
         (SYSTEM_API, _('Api')),
         (SYSTEM_LEADER, _('Leader')),
@@ -174,8 +176,13 @@ class Status(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        self.is_public = self.name not in self.PRIVATE_STATUSES
-        super(Status, self).save(*args, **kwargs)
+        with transaction.atomic():
+            self.is_public = self.name not in self.PRIVATE_STATUSES
+            super(Status, self).save(*args, **kwargs)
+
+            self.card.status = self
+            self.card.save()
+        #
 
     def __str__(self):
         return '{}:{}'.format(self.card, self.name)
@@ -346,6 +353,14 @@ class Card(models.Model):
         default=Status.NAME_INITIATED
     )
 
+    status = models.OneToOneField(
+        'Status',
+        related_name='status',
+        verbose_name=_('Status'),
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     def __str__(self):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
@@ -363,6 +378,9 @@ class Card(models.Model):
 
     def get_status(self, force=False):
         # fixme: joint with last_status as fk
+        if self.status is not None:
+            return self.status
+        #
         status = getattr(self, '_current_status',  None)
         if force and status:
             return status

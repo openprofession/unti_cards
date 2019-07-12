@@ -758,3 +758,112 @@ class RecommendedCardsView(RolePermissionMixin, TemplateView):
         #
         return self.get(request, *args, **kwargs)
 
+
+class ApprovedCardsFilterForm(forms.Form):
+    DATE_NEW = 'new'
+    DATE_OLD = 'old'
+    date = forms.ChoiceField(
+        label=_('Выберите время изменения карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По дате'),
+        }),
+        choices=(
+            (DATE_NEW, _('Сначала новые записи')),
+            (DATE_OLD, _('Сначала старые записи')),
+            ('',       _('Показать все')),
+        ),
+        required=False,
+    )
+
+
+class ApprovedCardsView(RolePermissionMixin, TemplateView):
+    """
+
+    """
+    template_name = 'issue.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ApprovedCardsView, self).get_context_data(**kwargs)
+
+        cards = models.Card.objects.filter(
+            type=models.Card.TYPE_RED,
+            last_status=models.Status.NAME_APPROVED,
+        ).all()
+
+        filters_form = RecommendedCardsFilterForm(self.request.GET)
+        if filters_form.is_valid():
+            filters = filters_form.cleaned_data
+            if filters.get('date', '') == filters_form.DATE_NEW:
+                cards = cards.order_by('-status__change_dt')
+            #
+            if filters.get('date', '') == filters_form.DATE_OLD:
+                cards = cards.order_by('status__change_dt')
+            #
+        #
+
+        context.update({
+            'cards':            cards,
+            'filters_form':     filters_form,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        cards = []
+        data = request.POST
+        action = data.get('action')
+        if action == 'all':
+            # card-efc6e4f2-a3f5-4c6c-b8e5-6d3463d8b8e0 = pusblish
+            for k, action_type in data.items():
+                if not k.startswith('card-'):
+                    continue
+                #
+                card_uuid = k[5:]
+                card = models.Card.objects.filter(uuid=card_uuid).first()
+                if not card:
+                    messages.error(
+                        request,
+                        'unable handle card {} is not exists'.format(card_uuid),
+                    )
+                    continue
+                #
+                cards.append(
+                    (card, action_type)
+                )
+        else:
+            action_type, card_uuid = (action.split('-', 1) + ['', ])[:2]
+            card = models.Card.objects.filter(uuid=card_uuid).first()
+            cards.append(
+                (card, action_type)
+            )
+
+        #
+        total_handled = 0
+        for card, action_type in cards:
+            if action_type not in ('publish', 'deactivate'):
+                messages.error(
+                    request, 'invalid action type {}'.format(action_type))
+                continue
+            #
+            assert isinstance(card, models.Card)
+            # Кнопка Опубликовать -
+            #   переводит карточку в статус published (system - Cards_admin)
+            # Кнопка Деактивировать -
+            #   переводит карточку в статус rejected (system - Cards_admin)
+            status_name = {
+                'publish':      models.Status.NAME_PUBLISHED,
+                'deactivate':   models.Status.NAME_REJECTED,
+            }[action_type]
+            card.set_status(
+                name=status_name,
+                system=models.Status.SYSTEM_CARDS_ADMIN,
+                user=request.user,
+            )
+            total_handled += 1
+        #
+        if total_handled > 0:
+            messages.success(
+                request, 'Всего изменено {} карточек'.format(total_handled))
+        #
+
+        return self.get(request, *args, **kwargs)

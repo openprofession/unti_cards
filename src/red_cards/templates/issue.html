@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+<main class="content">
+<section class="section-page">
+  <div class="container">
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Публикация красных карточек</li>
+      </ol>
+    </nav>
+
+
+
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <h1 class="section-title">Публикация <br>красных карточек ({{ cards.count }})</h1>
+      </div>
+      <div class="col-md-5">
+
+
+
+        <form class="form-filter" action="" METHOD="GET">
+{#            {% csrf_token %}#}
+          <div class="row align-items-center">
+            <div class="col-md-9">
+              <div class="form-group">
+{#              {{ filters_form.date.label_tag }}#}
+              {{ filters_form.date|attr:"class:form-control selectpicker"}}
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <button class="btn btn-outline-info" type="submit" style="min-width: auto;">ок</button>
+            </div>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+
+
+
+    <div class="issue-block">
+
+      <form class="form-issue"  action="" method="POST">
+                    {% csrf_token %}
+        <div class="form-issue__top">
+          <div class="form-group">
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" id="all1" type="checkbox" name="all">
+              <label class="custom-control-label" for="all1">Выбрать все</label>
+            </div>
+          </div>
+          <div class="form-group button-right"><button class="btn btn-primary" name="action" value="all" >Опубликовать все</button></div>
+        </div>
+        <div class="users-list">
+
+
+        {% for card in cards %}
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+
+
+                <div class="card-checkbox">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" id="card-{{ card.uuid }}" type="checkbox" name="card-{{ card.uuid }}" value="publish">
+                    <label class="custom-control-label" for="card-{{ card.uuid }}">Выбрать</label>
+                  </div>
+                </div>
+            <div class="user-event">
+              <h3 class="user-event__title">
+                      {{ card.reason }}
+                      {{ card.incident_dt|date:"d.m.Y" }}
+              </h3>
+              <div class="user-event__date">зафиксировано {{ card.get_status.change_dt|date:"d.m.Y" }}</div>
+              <p class="user-event__text">{{ card.description }}</p>
+            </div>
+          <div class="user-event">
+              Пользователь:
+                  <span
+                  >{{ card.get_user.get_full_name }}
+                  </span>
+              <span class="user-name__id user-id">ID {{ card.leader_id }}</span>
+          </div>
+          <div class="user-event">
+              <span class="label label-success" style="opacity: 0.6; background-color: red; border-radius: 0.25em; padding: 0 10px !important;
+color: #fff;">
+                  {{ card.get_user.get_count_issued_red_cards }}
+              </span>
+              <span class="label label-success" style="opacity: 0.6; background-color: #A48B04; margin-left: 10px; border-radius: 0.25em; padding: 0 10px !important;
+color: #fff;">
+                  {{ card.get_user.get_count_issued_yellow_cards }}
+              </span>
+            </div>
+
+
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><button class="btn btn-primary" name="action" value="publish-{{ card.uuid }}" >Опубликовать</button></div>
+                  <div class="event-panel__item"><button class="btn btn-outline-primary"  name="action" value="deactivate-{{ card.uuid }}">Деактивировать</button></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+            {% endfor %}
+
+        {% comment %}
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="card-checkbox">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" id="chk2" type="checkbox">
+                    <label class="custom-control-label" for="chk2">Выбрать</label>
+                  </div>
+                </div>
+                <div class="user-event">
+                  <h3 class="user-event__title">Нецензурные выражения 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <p class="user-event__text">Нецензурно выражался, разговаривал на повышенных тонах, отвлекал остальных учеников, все время спорил и мешал проподавателю</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Опубликовать</a></div>
+                  <div class="event-panel__item"><a class="btn btn-outline-primary" href="challenge.html">Деактивировать</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="card-checkbox">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" id="chk3" type="checkbox">
+                    <label class="custom-control-label" for="chk3">Выбрать</label>
+                  </div>
+                </div>
+                <div class="user-event">
+                  <h3 class="user-event__title">Нецензурные выражения 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <p class="user-event__text">Нецензурно выражался, разговаривал на повышенных тонах, отвлекал остальных учеников, все время спорил и мешал проподавателю</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Опубликовать</a></div>
+                  <div class="event-panel__item"><a class="btn btn-outline-primary" href="challenge.html">Деактивировать</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="users-list__item">
+            <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="card-checkbox">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" id="chk4" type="checkbox">
+                    <label class="custom-control-label" for="chk4">Выбрать</label>
+                  </div>
+                </div>
+                <div class="user-event">
+                  <h3 class="user-event__title">Нецензурные выражения 10.07.2019</h3>
+                  <div class="user-event__date">зафиксировано 11.07.2019</div>
+                  <p class="user-event__text">Нецензурно выражался, разговаривал на повышенных тонах, отвлекал остальных учеников, все время спорил и мешал проподавателю</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span class="color--red">Красная карточка</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item"><a class="btn btn-primary" href="#">Опубликовать</a></div>
+                  <div class="event-panel__item"><a class="btn btn-outline-primary" href="challenge.html">Деактивировать</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        {% endcomment %}
+
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+{% endblock %}
