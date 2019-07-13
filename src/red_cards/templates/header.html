@@ -16,7 +16,7 @@
                     <div class="header-links-grid__item"><a class="header-link" href="{% url 'help'  %}">Помощь</a></div>
 
                     {% if request.user.is_assistant %}
-                        <div class="header-links-grid__item"><a class="header-link" href="{% url 'users-search' %}">Выдать карточку</a></div>
+                        <div class="header-links-grid__item"><a class="header-link" href="{% url 'user-cards' %}">Выдать карточку</a></div>
                 {% endif %}
                     {% if request.user.is_authenticated %}
                         <div class="header-links-grid__item">{{ request.user.get_full_name }}</div>
