@@ -71,7 +71,7 @@ def reg_admin_model(model):
 
 class TypeCardFilter(SimpleListFilter):
     title = _('Тип карточки')
-    parameter_name = 'f_type'
+    parameter_name = 'type'
 
     def lookups(self, request, model_admin):
         choices = []
@@ -103,7 +103,7 @@ class TypeCardFilter(SimpleListFilter):
 
 class StatusCardFilter(SimpleListFilter):
     title = _('Последний статус')
-    parameter_name = 'f_last_status'
+    parameter_name = 'last_status'
 
     def lookups(self, request, model_admin):
         choices = []
@@ -130,7 +130,7 @@ class StatusCardFilter(SimpleListFilter):
 
 class ChangeDtFilter(SimpleListFilter):
     title = _('Время последнего изменения статуса (минимум)')
-    parameter_name = 'f_change_dt'
+    parameter_name = 'change_dt'
 
     def lookups(self, request, model_admin):
         choices = []
@@ -202,7 +202,7 @@ class CardAdmin(admin.ModelAdmin):
     )
 
     actions = (
-        'delete_selected',
+        # 'delete_selected',  # will set by default
         'set_status_issued',
         'set_status_published',
     )
@@ -228,7 +228,7 @@ class CardAdmin(admin.ModelAdmin):
             return '-'
         #
 
-    _change_status_dt.short_description = 'change_dt'
+    _change_status_dt.short_description = 'change dt'
 
     def _change_status_dt_indent(self, obj):
         assert isinstance(obj, models.Card)
@@ -240,7 +240,7 @@ class CardAdmin(admin.ModelAdmin):
             return '-'
         #
 
-    _change_status_dt_indent.short_description = 'dt_indent'
+    _change_status_dt_indent.short_description = 'dt indent'
 
     def set_status_issued(self, request, queryset):
         total_handled = 0
