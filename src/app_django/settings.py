@@ -216,6 +216,20 @@ FILE_UPLOAD_HANDLERS = (
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 )
 
+CACHES = {
+    'default': {
+        # https://docs.djangoproject.com/en/2.2/topics/cache/
+        # https://hub.docker.com/_/memcached?tab=description
+        # https://github.com/memcached/memcached#memcached
+        # 'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        # 'LOCATION': '{}:11211'.format(env("MEMCACHED_HOST")),
+
+        # https://docs.djangoproject.com/en/2.2/topics/cache/#local-memory-caching
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 # ############################################################################ #
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'DEBUG').strip().upper()
 

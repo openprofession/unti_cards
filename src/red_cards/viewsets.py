@@ -10,6 +10,12 @@ from red_cards.serializers import CardSerializer
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.permissions import IsAuthenticated
+from django.utils.decorators import method_decorator
+
+from functools import wraps
+import base64
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 
 
 class ListingFilter(django_filters.FilterSet):
@@ -56,6 +62,25 @@ class ListingFilter(django_filters.FilterSet):
         return queryset.filter(status__change_dt__lte=value)
 
 
+def _cache_by_leader_id(fn):
+    @wraps(fn)
+    def wrapper(request, *args, **kwargs):
+        if 'leader_id' in request.GET:
+            params = list(request.GET.items())
+            params.sort(key=lambda item: item[0])
+            key = str(params)
+            key = base64.b32encode(key.encode()).decode()
+            cached_response = cache.get(key)
+            if not cached_response:
+                response = fn(request, *args, **kwargs)
+                cache.set(key, response.render(), 60*10)
+                return response
+        #   #
+        return fn(request, *args, **kwargs)
+    #
+    return wrapper
+
+
 class CardViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -82,3 +107,6 @@ class CardViewSet(
     #     response = super(CardViewSet, self).create(request, *args, **kwargs)
     #     return response
 
+    @method_decorator(_cache_by_leader_id)
+    def dispatch(self, *args, **kwargs):
+        return super(CardViewSet, self).dispatch(*args, **kwargs)
