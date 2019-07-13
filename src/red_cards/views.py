@@ -348,7 +348,7 @@ class AppealForm(forms.Form):
         widget=forms.Textarea(attrs={
             'placeholder': _('Опишите, что произошло и почему вы не согласны...'),
         }),
-        required=True,
+        required=False,
     )
     file = forms.FileField(
         label=_('Выберите файл'),
