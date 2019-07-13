@@ -88,6 +88,7 @@ class Status(models.Model):
     SYSTEM_CARDS_TRANSFORM = 'cards-transform'
     SYSTEM_CARDS_REPAYMENT = 'cards-repayment'
     SYSTEM_EXPERIMENTS = 'experiments'
+    SYSTEM_UNDEFINED = 'legacy'
     SYSTEM_CHOICES = (
 
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
@@ -99,6 +100,7 @@ class Status(models.Model):
         (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
         (SYSTEM_CARDS_REPAYMENT, _('Cards-repayment')),
         (SYSTEM_EXPERIMENTS, _('Experiments')),
+        (SYSTEM_UNDEFINED, _('From old site version')),
     )
     system = models.CharField(  # источник изменения статуса
         verbose_name=_('System'),
@@ -155,11 +157,16 @@ class Status(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        self.is_public = self.name not in self.PRIVATE_STATUSES
-        super(Status, self).save(*args, **kwargs)
+        with transaction.atomic():
+            self.is_public = self.name not in self.PRIVATE_STATUSES
+            super(Status, self).save(*args, **kwargs)
+
+            self.card.current_status = self
+            self.card.save()
+        #
 
     def __str__(self):
-        return '{}:{}'.format(self.card, self.name)
+        return '{}:{}'.format(self.name, self.card)
 
 
 class CardManager(models.Manager):
@@ -327,6 +334,14 @@ class Card(models.Model):
         default=Status.NAME_INITIATED
     )
 
+    current_status = models.OneToOneField(
+        'Status',
+        related_name='current_status',
+        verbose_name=_('Status'),
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     def __str__(self):
         return '{}:{}.L{}'.format(self.type, self.uuid, self.leader_id)
 
@@ -343,6 +358,9 @@ class Card(models.Model):
         )
 
     def get_status(self):
+        if self.current_status is not None:
+            return self.current_status
+        #
         return Status.objects.filter(
             card=self,
         ).order_by(
