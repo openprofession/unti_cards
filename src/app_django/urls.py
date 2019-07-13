@@ -65,6 +65,10 @@ urlpatterns += [
                        views.SearchView.as_view(),
                        name='users-search'),
 
+                  path('user/cards',
+                       views.SearchUserCardsView.as_view(),
+                       name='user-cards'),
+
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

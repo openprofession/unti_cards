@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% load bootstrap_pagination %}
+{% block page_css %}
+<style>
+.search_block{
+    padding: 0 !important;
+    font-size: 14pt!important;
+    height: 30px!important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content">
+<section class="section-page">
+  <div class="container">
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Выбор студента</li>
+      </ol>
+    </nav>
+
+
+    <h1 class="section-title">Выберите студента</h1>
+    <form class="form-search" action="" method="get">
+      <div class="row align-items-center">
+
+
+<!-- --------------------------------------------------------------------- -->
+
+    <div class="col-md-5">
+      <div class="form-group" style="padding: 0">
+        <select class="selectpicker form-control search_block" id="sls1"
+                data-live-search="true" style="padding: 0!important;"
+                name="user"
+        >
+            {% for user in all_users %}
+                <option data-tokens="{{ user.leader_id }}" {% if user == selected_user %}selected{% endif %}>L{{ user.leader_id }} {{ user.get_full_name }}</option>
+            {% endfor %}
+        </select>
+      </div>
+    </div>
+          <div class="col-md-5">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.status|attr:"class:form-control selectpicker search_block"}}
+                </div>
+            </div>
+    <div class="col-md-2">
+      <div class="form-group" style="padding: 0">
+        <div class="form-button-group__item">
+          <button class="btn btn-primary" type="submit">выбрать</button>
+        </div>
+      </div>
+    </div>
+
+<!-- --------------------------------------------------------------------- -->
+
+
+        <div class="col-md-6">
+{#          <div class="label-id">ID 123456</div>#}
+        </div>
+      </div>
+    </form>
+
+
+    <div class="users-list">
+
+        {% if selected_user %}
+      <div class="users-list__item">
+        <div class="row align-items-center">
+          <div class="col-md-4">
+              <a class="user-name user-link"
+{#                 href="{% url 'card-add' leader_id=selected_user.leader_id %}" target="_blank"#}
+              >
+              <div class="user-name__value">{{ selected_user.get_full_name }}</div>
+              <span class="user-name__id user-id">ID {{ selected_user.leader_id }}</span></a>
+          </div>
+          <div class="col-md-4">
+              <a class="btn btn-outline-primary" target="_blank"
+                 href="{% url 'card-add' leader_id=selected_user.leader_id %}" type="submit">Выдать карточку</a>
+          </div>
+          <div class="col-md-4">
+{#            <div class="user-email align--right"><a href="mailto:{{ selected_user.email }}">{{ selected_user.email }}</a></div>#}
+          </div>
+        </div>
+      </div>
+        {% endif %}
+
+
+
+
+        {% if not cards %}
+      <div class="users-list__item">
+        <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                       <p style="padding: 0 0 25px 20px;">
+                  У пользователя {{ selected_user.get_full_name }} нет карточек
+
+                       </p>
+
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {% for card in cards %}
+      <div class="users-list__item">
+        <div class="row align-items-center">
+              <div class="col-lg-9 col-md-8">
+                <div class="user-event">
+                  <h3 class="user-event__title">
+                      {{ card.reason }}
+                      {{ card.incident_dt|date:"d.m.Y" }}</h3>
+                  <div class="user-event__date">зафиксировано {{ card.get_status.change_dt|date:"d.m.Y" }}</div>
+              <p class="user-event__text">{{ card.description }}</p>
+                </div>
+                <div class="card-type">
+                  Тип:
+                  <span
+                    {% if card.type == card.TYPE_RED %}
+                          class="color--red"
+                    {% elif card.type == card.TYPE_YELLOW %}
+                          class="color--yellow"
+
+                    {% elif card.type == card.TYPE_GREEN %}
+                          class="color--green"
+
+                    {% else %}
+                          class="color--blue"
+                    {% endif %}
+                  >{{ card.type_verbose }}</span>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4">
+                <div class="event-panel">
+                  <div class="event-panel__item">
+
+                   {% if card.get_status.name == card.get_status.NAME_PUBLISHED %}
+                   <div class="event-notice ">Можно оспорить</div>
+                  {% endif %}
+
+                   {% if card.get_status.name == card.get_status.NAME_ISSUED %}
+                   <div class="event-notice color--green">Выдана</div>
+                  {% endif %}
+
+                   {% if card.get_status.name == card.get_status.NAME_CONSIDERATION %}
+                   <div class="event-notice color--blue">Оспорена - на рассмотрении</div>
+                  {% endif %}
+
+                   {% if card.get_status.name == card.get_status.NAME_ELIMINATED %}
+                   <div class="event-notice color--green">Деактивирована</div>
+                  {% endif %}
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+
+
+
+
+  </div>
+
+
+</section>
+</main>
+{% endblock %}

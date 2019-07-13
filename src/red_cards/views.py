@@ -236,8 +236,9 @@ class RolePermissionMixin(PermissionRequiredMixin):
     )
 
     def has_permission(self):
-        if self.request.user:
-            if self.request.user.is_assistant:
+        current_user = self.request.user
+        if not current_user.is_anonymous:
+            if current_user.is_assistant:
                 return True
         #   #
         return super(RolePermissionMixin, self).has_permission()
@@ -608,3 +609,86 @@ class SearchView(RolePermissionMixin, TemplateView):
         })
         return context
 
+
+# ############################################################################ #
+
+class SearchUserCardsFilterForm(forms.Form):
+    status = forms.ChoiceField(
+        label=_('Выберите статус карточки'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По статусу'),
+        }),
+        choices=(
+            (models.Status.NAME_PUBLISHED,      _('Можно оспорить')),
+            (models.Status.NAME_ISSUED,         _('Выдана')),
+            (models.Status.NAME_CONSIDERATION,  _('Оспорена - на рассмотрении')),
+            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
+            ('',                                _('Показать все')),
+        ),
+        required=False,
+    )
+
+
+class SearchUserCardsView(RolePermissionMixin, TemplateView):
+    """
+
+    страничка для ассистента где он может
+        вбить лидер/фио и
+        посмотреть список карточек у юзера в статусах
+            published, issued, consideration, eliminated
+
+    надписи по статусам на русском такие:
+        published -Можно оспорить
+        issued - Выдана
+        Consideration - Оспорена. На рассмотрении
+        eliminated - Деактивирована
+    """
+    template_name = 'selection-page-user-cards.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchUserCardsView, self).get_context_data(**kwargs)
+        all_users = models.User.objects.filter(
+            leader_id__isnull=False,
+        ).order_by(
+            'first_name', 'last_name', 'username'
+        ).all()
+
+        selected_user = self.request.GET.get('user', None)
+        if selected_user:
+            selected_user = selected_user.split(' ', 1)[0].strip('L')
+            selected_user = models.User.objects.filter(
+                leader_id=selected_user
+            ).first()
+        #
+        filters_form = SearchUserCardsFilterForm(self.request.GET)
+
+        cards = []
+        if selected_user:
+            cards = models.Card.objects.filter(
+                type=models.Card.TYPE_RED,
+                leader_id=selected_user.leader_id,
+                last_status__in=(
+                    models.Status.NAME_PUBLISHED,
+                    models.Status.NAME_ISSUED,
+                    models.Status.NAME_CONSIDERATION,
+                    models.Status.NAME_ELIMINATED,
+                )
+            )
+
+            if filters_form.is_valid():
+                filters = filters_form.cleaned_data
+                if filters.get('status', ''):
+                    cards = cards.filter(last_status=filters['status'])
+                #
+            #
+        #
+
+        context.update({
+            'all_users':        all_users,
+            'selected_user':   selected_user,
+
+            'cards':   cards,
+            'filters_form':   filters_form,
+        })
+        return context
