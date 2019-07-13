@@ -87,6 +87,7 @@ class Status(models.Model):
     SYSTEM_LEADER = 'leader'
     SYSTEM_CARDS_TRANSFORM = 'cards-transform'
     SYSTEM_CARDS_REPAYMENT = 'cards-repayment'
+    SYSTEM_CARDS_ISSUE = 'cards-issue'
     SYSTEM_EXPERIMENTS = 'experiments'
     SYSTEM_CHOICES = (
 
@@ -98,6 +99,7 @@ class Status(models.Model):
         (SYSTEM_LEADER, _('Leader')),
         (SYSTEM_CARDS_TRANSFORM, _('Cards-transform')),
         (SYSTEM_CARDS_REPAYMENT, _('Cards-repayment')),
+        (SYSTEM_CARDS_ISSUE, _('Cards-issue')),
         (SYSTEM_EXPERIMENTS, _('Experiments')),
     )
     system = models.CharField(  # источник изменения статуса
