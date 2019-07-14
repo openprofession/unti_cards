@@ -540,7 +540,8 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         )
 
         # status = STATUS_NEW by default
-        _data = dict(self.request.GET)
+        _data = self.request.GET.dict()
+        # ----------------------^^^^^^ IMPORTANT or will be list instead value
         if 'status' not in _data:
             _data['status'] = models.Appeal.STATUS_NEW
         #
