@@ -58,7 +58,9 @@
 
         </div>
 
+      {% if request.user.is_assistant %}
             <div class="event-date">
+
           {% if appeal.status != appeal.STATUS_APPROVED and appeal.status != appeal.STATUS_REJECTED %}
                  Время до решения:
                 <span
@@ -72,6 +74,7 @@
                 </span>
           {% endif %}
             </div>
+      {% endif %}
       </div>
     </div>
 
