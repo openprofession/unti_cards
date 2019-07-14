@@ -493,6 +493,43 @@ class ExecutiveMixin:
         return self.get(request, *args, **kwargs)
 
 
+class AppealListFilterForm(forms.Form):
+
+    # По статусу: Не просмотрено, На рассмотрении, Принято, Отказ
+    status = forms.ChoiceField(
+        label=_('Выберите статус апеляции'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По статусу'),
+        }),
+        # AppealListFilterForm(initial={'status': models.Appeal.STATUS_NEW})
+        choices=(
+            (models.Appeal.STATUS_NEW,          _('Не просмотрено')),
+            (models.Appeal.STATUS_IN_WORK,      _('На рассмотрении')),
+            (models.Appeal.STATUS_APPROVED,     _('Принято')),
+            (models.Appeal.STATUS_REJECTED,     _('Отказ')),
+            ('',     _('все')),
+        ),
+        # initial=models.Appeal.STATUS_NEW,
+        required=False,
+    )
+
+    new_messages = forms.ChoiceField(
+        label=_('Есть новые соообщения'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('По сообщениям'),
+        }),
+        choices=(
+            ('only_new',            _('есть новые сообщения')),
+            ('has_comments',        _('есть сообщения')),
+            ('no_comments',         _('без сообщений')),
+            ('',                    _('все')),
+        ),
+        required=False,
+    )
+
+
 class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_list.html'
 
@@ -501,8 +538,41 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         appeals = models.Appeal.objects.all().order_by(
             '-create_dt'
         )
+
+        # status = STATUS_NEW by default
+        _data = dict(self.request.GET)
+        if 'status' not in _data:
+            _data['status'] = models.Appeal.STATUS_NEW
+        #
+        filters_form = AppealListFilterForm(_data)
+
+        if filters_form.is_valid():
+            filters = filters_form.cleaned_data
+            if filters.get('status', ''):
+                appeals = appeals.filter(status=filters['status'])
+            #
+            if filters.get('new_messages', '') == 'no_comments':
+                appeals = appeals.exclude(
+                    id__in=models.AppealComment.objects.values('appeal')
+                )
+            #
+            if filters.get('new_messages', '') == 'has_comments':
+                appeals = appeals.filter(
+                    id__in=models.AppealComment.objects.values('appeal')
+                )
+            #
+            if filters.get('new_messages', '') == 'only_new':
+                appeals = appeals.filter(
+                    id__in=models.AppealComment.objects.exclude(
+                        seen_by_users=self.request.user
+                    ).values('appeal')
+                )
+            #
+        #
+
         context.update({
-            'appeals': appeals,
+            'appeals':          appeals,
+            'filters_form':     filters_form,
         })
         return context
 

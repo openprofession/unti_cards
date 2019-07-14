@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load comments_tools %}
+{% load widget_tweaks %}
 
 
 {% block content %}
@@ -9,12 +10,38 @@
         <li class="breadcrumb-item active" aria-current="page">Заявки</li>
       </ol>
     </nav>
+    <form class="" action="" method="get">
     <div class="row align-items-center">
-      <div class="col-md-5">
+
+      <div class="col-md-4">
         <h1 class="section-title">Заявки</h1>
       </div>
+              <div class="col-md-3">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.status|attr:"class:form-control selectpicker search_block"}}
+                </div>
+            </div>
+              <div class="col-md-3">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.new_messages|attr:"class:form-control selectpicker search_block"}}
+                </div>
+            </div>
+    <div class="col-md-2">
+      <div class="form-group" style="padding: 0">
+        <div class="form-button-group__item">
+          <button class="btn btn-primary" type="submit">выбрать</button>
+        </div>
+      </div>
+      </div>
+{% comment %}
       <div class="col-md-7">
-          {% comment %}
+
+    По статусу: Не просмотрено, На рассмотрении, Принято, Отказ
+По новым сообщениям: Есть или нет
+
+
         <form class="form-filter">
           <div class="row align-items-center">
             <div class="col-md-6">
@@ -36,10 +63,15 @@
             </div>
           </div>
         </form>
-          {% endcomment %}
+
+
+
 
       </div>
+
+{% endcomment %}
     </div>
+    </form>
     <div class="users-list">
 
     {% for appeal in appeals %}
