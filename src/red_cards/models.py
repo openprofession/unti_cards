@@ -668,29 +668,29 @@ def update_stock(sender, instance, **kwargs):
                     system=Status.SYSTEM_CARDS_TRANSFORM,
                 )
     #   #   #
-    if card.type in (
-            card.TYPE_GREEN,
-            card.TYPE_RED,
-    ):
-        with transaction.atomic():
-            green_cards = Card.objects.filter(
-                type=Card.TYPE_GREEN,
-                leader_id=card.leader_id,
-                last_status=Status.NAME_ISSUED,
-            ).order_by('incident_dt').all()
-            red_cards = Card.objects.filter(
-                type=Card.TYPE_RED,
-                leader_id=card.leader_id,
-                last_status=Status.NAME_ISSUED,
-            ).order_by('incident_dt').all()
-            for green, red in zip(green_cards, red_cards):
-                green.set_status(
-                    name=Status.NAME_ELIMINATED,
-                    system=Status.SYSTEM_CARDS_REPAYMENT
-                )
-                red.set_status(
-                    name=Status.NAME_ELIMINATED,
-                    system=Status.SYSTEM_CARDS_REPAYMENT
-                )
-    #   #   #
+    # if card.type in (
+    #         card.TYPE_GREEN,
+    #         card.TYPE_RED,
+    # ):
+    #     with transaction.atomic():
+    #         green_cards = Card.objects.filter(
+    #             type=Card.TYPE_GREEN,
+    #             leader_id=card.leader_id,
+    #             last_status=Status.NAME_ISSUED,
+    #         ).order_by('incident_dt').all()
+    #         red_cards = Card.objects.filter(
+    #             type=Card.TYPE_RED,
+    #             leader_id=card.leader_id,
+    #             last_status=Status.NAME_ISSUED,
+    #         ).order_by('incident_dt').all()
+    #         for green, red in zip(green_cards, red_cards):
+    #             green.set_status(
+    #                 name=Status.NAME_ELIMINATED,
+    #                 system=Status.SYSTEM_CARDS_REPAYMENT
+    #             )
+    #             red.set_status(
+    #                 name=Status.NAME_ELIMINATED,
+    #                 system=Status.SYSTEM_CARDS_REPAYMENT
+    #             )
+    # #   #   #
 
