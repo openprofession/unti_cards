@@ -538,6 +538,24 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         appeals = models.Appeal.objects.all().order_by(
             '-create_dt'
         )
+        # Вывод статистики: - общая без учета фильтров
+        #       Не просмотрено,
+        #       На рассмотрении,
+        #       Принято,
+        #       Отказ,
+        #       C новыми сообщениями
+
+        appeals_stats = {
+            'new':          appeals.filter(status=models.Appeal.STATUS_NEW).count(),
+            'in_work':      appeals.filter(status=models.Appeal.STATUS_IN_WORK).count(),
+            'approved':     appeals.filter(status=models.Appeal.STATUS_APPROVED).count(),
+            'rejected':     appeals.filter(status=models.Appeal.STATUS_REJECTED).count(),
+            'has_new_messages':     appeals.filter(
+                    id__in=models.AppealComment.objects.exclude(
+                        seen_by_users=self.request.user
+                    ).values('appeal')
+                ).count(),
+        }
 
         # status = STATUS_NEW by default
         _data = self.request.GET.dict()
@@ -574,6 +592,7 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         context.update({
             'appeals':          appeals,
             'filters_form':     filters_form,
+            'appeals_stats':    appeals_stats,
         })
         return context
 
