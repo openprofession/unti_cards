@@ -589,6 +589,7 @@ class AppealComment(models.Model):
 
     seen_by_users = models.ManyToManyField(
         User,
+        related_name='seen_by_users',
     )
 
 
