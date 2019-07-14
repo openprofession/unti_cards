@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
+from django.http import Http404
 
 from django.views.generic import FormView, TemplateView
 
@@ -423,6 +424,10 @@ class AppealsFormView(FormView, BaseAppealsView):
                 messages.error(request, 'Карточка уже оспорена')
                 return self.get(request, *args, **kwargs)
             #
+            if int(self.request.user.leader_id) != int(card.leader_id):
+                # only own car can be challenge
+                raise HttpResponseForbidden
+            #
 
             appeal = form.save(card, request.user)
             assert isinstance(appeal, models.Appeal)
@@ -502,6 +507,9 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         return context
 
     def post(self, request, *args, **kwargs):
+        if not super(AppealListView, self).has_permission():
+            return self.handle_no_permission()
+        #
         return self.handle_executive(request, *args, **kwargs)
 
 
@@ -519,18 +527,89 @@ class ArgsAppealDetailAdminView(forms.Form):
 
 class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_detail_admin.html'
+    
+    def has_permission(self):
+        # return super(AppealDetailAdminView, self).has_permission()
+        return True
+
+    def get_appeal(self, **kwargs):
+        appeal = getattr(self, '_appeal', None)
+        if not appeal:
+            appeal = ArgsAppealDetailAdminView(kwargs).get_appeal()
+        #
+        if not appeal:
+            raise Http404
+        #
+        assert isinstance(appeal, models.Appeal)
+        setattr(self, '_appeal', appeal)
+        return appeal
+
+    def _has_permission_for_appeal(self, **kwargs):
+        if super(AppealDetailAdminView, self).has_permission():
+            return True
+        #
+        if self.request.user.is_anonymous:
+            return False
+        #
+        appeal = self.get_appeal(**kwargs)
+        if int(appeal.card.leader_id) == int(self.request.user.leader_id):
+            return True  # allow access for owner
+        #
+        return False
 
     def get_context_data(self, **kwargs):
         context = super(AppealDetailAdminView, self).get_context_data(**kwargs)
-        appeal = ArgsAppealDetailAdminView(kwargs).get_appeal()
+        appeal = self.get_appeal(**kwargs)
+
+        if not self._has_permission_for_appeal(**kwargs):
+            return self.handle_no_permission()
+        #
+        if self.request.POST.get('form_name') == 'comment':
+            comment_form = AppealCommentForm(
+                data=self.request.POST,
+                files=self.request.FILES,
+            )
+        else:
+            comment_form = AppealCommentForm()
+        #
+        comments = appeal.get_comments()
+        #
         context.update({
-            'card': appeal.card,
-            'appeal': appeal,
+            'card':             appeal.card,
+            'appeal':           appeal,
+            'comment_form':     comment_form,
+            'comments':         comments,
         })
         return context
 
     def post(self, request, *args, **kwargs):
+        if not self._has_permission_for_appeal(**kwargs):
+            return self.handle_no_permission()
+        #
+        # ------------------------------------------------------------ #
+
         form_name = self.request.POST.get('form_name')
+        if form_name == 'comment':
+            context = self.get_context_data(**kwargs)
+            comment_form = context['comment_form']
+            assert isinstance(comment_form, AppealCommentForm)
+            appeal = context['appeal']
+            if appeal.status not in (
+                    appeal.STATUS_NEW,
+                    appeal.STATUS_IN_WORK,
+            ):
+                return self.get(request, *args, **kwargs)
+            #
+            if comment_form.is_valid():
+                comment_form.save(request.user, appeal)
+            #
+            return self.get(request, *args, **kwargs)
+        #   #
+
+        # ------------------------------------------------------------ #
+        if not super(AppealDetailAdminView, self).has_permission():
+            return self.handle_no_permission()
+        #
         if form_name == 'executive':
             return self.handle_executive(request, *args, **kwargs)
         elif form_name == 'manage':
@@ -566,7 +645,33 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
         #
 
 
+class AppealCommentForm(forms.Form):
+    text = forms.CharField(
+        label=_('Введите комментарий'),
+        label_suffix='',
+        widget=forms.Textarea(attrs={
+            'placeholder': _('Опишите, что произошло...'),
+        }),
+    )
+
+    file = forms.FileField(
+        label=_('Выберите файл'),
+        label_suffix='',
+        widget=forms.FileInput(),
+        required=False
+    )
+
+    def save(self, user, appeal):
+        comment = models.AppealComment.objects.create(
+            user=user,
+            appeal=appeal,
+            file=self.cleaned_data.get('file'),
+            text=self.cleaned_data.get('text'),
+        )
+        return comment
+
 # ############################################################################ #
+
 
 class SearchView(RolePermissionMixin, TemplateView):
     template_name = 'selection-page.html'

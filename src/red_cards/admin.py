@@ -149,3 +149,11 @@ class AppealAdmin(admin.ModelAdmin):
         'status',
         'card',
     )
+
+
+@reg_admin_model(models.AppealComment)
+class AppealCommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'appeal',
+    )

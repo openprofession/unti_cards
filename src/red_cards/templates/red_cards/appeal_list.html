@@ -71,7 +71,11 @@
                 </span>
           {% endif %}
             </div>
-
+          {% if appeal.get_comments.count > 0 %}
+            <div class="event-date">
+                Коментарии: {{ appeal.get_comments.count }}
+            </div>
+            {% endif %}
           </div>
             {% include 'red_cards/appeal_status.html' %}
 

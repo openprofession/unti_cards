@@ -13,7 +13,7 @@
                 {% else %}
                     <div class="user-status__value orange-color">NA</div>
                 {% endif %}
-
+            {% if request.user.is_assistant %}
                 {% if appeal.status == appeal.STATUS_NEW or appeal.status == appeal.STATUS_IN_WORK %}
                     {% if appeal.executive %}
                         <span style="color: gray;">{{ appeal.executive.get_full_name }}</span>
@@ -36,6 +36,7 @@
                 {% else %}
                     <span style="color: gray;">{{ appeal.date_finished|date:"d.m.Y" }}</span>
                 {% endif %}
+            {% endif %}
 
 
 

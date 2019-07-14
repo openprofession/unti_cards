@@ -371,6 +371,11 @@ class Card(models.Model):
         #
         return result
 
+    def get_appeal(self):
+        return Appeal.objects.filter(
+            card=self
+        ).first()
+
 
 class ClassRum(models.Model):
     uuid = models.UUIDField(
@@ -534,6 +539,43 @@ class Appeal(models.Model):
             self.time_for_complete(),
             '%Hh %Mm'
         )
+
+    def add_comment(self, text, file=None):
+        comment = AppealComment.objects.create(
+            text=text,
+            file=file,
+        )
+        return comment
+
+    def get_comments(self):
+        return AppealComment.objects.filter(
+            appeal=self
+        ).order_by('date')
+
+
+class AppealComment(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=False, blank=False,
+    )
+    date = models.DateTimeField(
+        auto_now_add=True,
+        null=False, blank=False,
+    )
+    appeal = models.ForeignKey(
+        Appeal,
+        on_delete=models.CASCADE,
+        null=False, blank=False,
+    )
+    text = models.TextField(
+        verbose_name=_('Description'),
+        null=False, blank=False,
+    )
+    file = models.FileField(
+        verbose_name=_('file'),
+        null=True, blank=True,
+    )
 
 
 class Event(models.Model):

@@ -122,6 +122,89 @@
         </div>
       </div>
     {% endif %}
+
+
+  <div class="section-block__item">
+  {% if not comments %}
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="user-event">
+              <p class="user-event__text">
+                  нет коментариев
+              </p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+          {%  for comment in comments %}
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="user-event" {% if comment.user == request.user %}style="text-align: right"{% endif %}>
+              <p class="user-event__text">
+                 {{ comment.date|date:"d.m.Y H:i" }}
+                  {% if comment.user == request.user or request.user.is_assistant %}
+                      | {{ comment.user.get_full_name }}
+                  {% endif %}
+            {% if request.user.is_assistant %}
+                    | ID {{ comment.user.leader_id }}
+            {% endif %}
+              </p>
+
+
+              <p class="">
+                 {{ comment.text }}
+              </p>
+
+          {% if comment.file %}
+      <div class="form-group">
+        <div class="custom-file">
+            <a href="{{ comment.file.url }}" download>{{ comment.file.name  }}</a>
+        </div>
+      </div>
+          {% endif %}
+
+        </div>
+      </div>
+      </div>
+      <div class="col-md-4">
+      </div>
+          {% endfor %}
+  </div>
+
+{% if appeal.status == appeal.STATUS_IN_WORK or appeal.status == appeal.STATUS_NEW %}
+  <div class="section-block__item">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+
+
+                <form  enctype="multipart/form-data"  class="form-event" action="" method="POST">
+        {% csrf_token %}
+                    <input type="hidden" name="form_name" value="comment" />
+
+      <div class="form-group">
+          {{ comment_form.text|attr:"class:form-control form-textarea"  }}
+      </div>
+      <div class="form-group">
+        <div class="custom-file">
+          {{ comment_form.file|attr:"class:custom-file-input" }}
+
+          {{ comment_form.file|add_label_class:"custom-file-label" }}
+
+        </div>
+      </div>
+      <div class="form-button align--center">
+        <button class="btn btn-primary" type="submit">Отправить</button>
+      </div>
+
+    </form>
+
+
+
+        </div>
+      </div>
+  </div>
+
+{% endif %}
 </div>
 </div>
 {% endblock %}
