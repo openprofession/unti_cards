@@ -564,16 +564,14 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
         if not self._has_permission_for_appeal(**kwargs):
             return self.handle_no_permission()
         #
-        if self.request.POST.get('form_name') == 'comment':
-            comment_form = AppealCommentForm(
-                data=self.request.POST,
-                files=self.request.FILES,
-            )
-        else:
-            comment_form = AppealCommentForm()
+        comment_form = getattr(self, '_comment_form', AppealCommentForm())
         #
         comments = appeal.get_comments()
-        #
+        for comment in comments:
+            assert isinstance(comment, models.AppealComment)
+            if self.request.user not in comment.seen_by_users.all():
+                comment.seen_by_users.add(self.request.user)
+        #   #
         context.update({
             'card':             appeal.card,
             'appeal':           appeal,
@@ -591,8 +589,6 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
         form_name = self.request.POST.get('form_name')
         if form_name == 'comment':
             context = self.get_context_data(**kwargs)
-            comment_form = context['comment_form']
-            assert isinstance(comment_form, AppealCommentForm)
             appeal = context['appeal']
             if appeal.status not in (
                     appeal.STATUS_NEW,
@@ -600,8 +596,14 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             ):
                 return self.get(request, *args, **kwargs)
             #
+            comment_form = AppealCommentForm(
+                data=self.request.POST,
+                files=self.request.FILES,
+            )
             if comment_form.is_valid():
                 comment_form.save(request.user, appeal)
+            else:
+                setattr(self, '_comment_form', comment_form)
             #
             return self.get(request, *args, **kwargs)
         #   #

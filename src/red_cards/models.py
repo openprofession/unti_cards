@@ -552,6 +552,16 @@ class Appeal(models.Model):
             appeal=self
         ).order_by('date')
 
+    def get_count_comments(self, user):
+        comments = self.get_comments()
+        return comments.count()
+
+    def get_count_new_comments(self, user):
+        comments = self.get_comments()
+        return comments.exclude(
+            seen_by_users=user
+        ).count()
+
 
 class AppealComment(models.Model):
     user = models.ForeignKey(
@@ -575,6 +585,10 @@ class AppealComment(models.Model):
     file = models.FileField(
         verbose_name=_('file'),
         null=True, blank=True,
+    )
+
+    seen_by_users = models.ManyToManyField(
+        User,
     )
 
 

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load comments_tools %}
 
 
 {% block content %}
@@ -73,7 +74,10 @@
             </div>
           {% if appeal.get_comments.count > 0 %}
             <div class="event-date">
-                Коментарии: {{ appeal.get_comments.count }}
+                    Коментарии: {{ appeal|count_comments:request.user }}
+                {% if appeal|count_new_comments:request.user > 0 %}
+                    , <span style="color: rgb(245, 153, 50);">новых: {{ appeal|count_new_comments:request.user }}</span>
+                    {% endif %}
             </div>
             {% endif %}
           </div>
