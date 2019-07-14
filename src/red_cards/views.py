@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.http import Http404
+from django.shortcuts import redirect
 
 from django.views.generic import FormView, TemplateView
 
@@ -692,6 +693,7 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             )
             if comment_form.is_valid():
                 comment_form.save(request.user, appeal)
+                return redirect(request.get_full_path())
             else:
                 setattr(self, '_comment_form', comment_form)
             #
