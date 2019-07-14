@@ -530,7 +530,7 @@ class Appeal(models.Model):
         )
 
     def time_for_complete(self):
-        _time = (self.create_dt + timezone.timedelta(hours=2)) \
+        _time = (self.create_dt + timezone.timedelta(hours=24)) \
                 - timezone.now()
         return _time.total_seconds()
 
