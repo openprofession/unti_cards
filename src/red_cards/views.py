@@ -462,13 +462,13 @@ class ExecutiveMixin:
             )
             return self.get(request, *args, **kwargs)
         #
-        if appeal.status in (
-                appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
-        ):
-            messages.error(
-                request, 'Данная заявка закрыта.'
-            )
-            return self.get(request, *args, **kwargs)
+        # if appeal.status in (
+        #         appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
+        # ):
+        #     messages.error(
+        #         request, 'Данная заявка закрыта.'
+        #     )
+        #     return self.get(request, *args, **kwargs)
         #
         action = self.request.POST.get('action')
         if action == 'assign':
@@ -590,11 +590,11 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
         if form_name == 'comment':
             context = self.get_context_data(**kwargs)
             appeal = context['appeal']
-            if appeal.status not in (
-                    appeal.STATUS_NEW,
-                    appeal.STATUS_IN_WORK,
-            ):
-                return self.get(request, *args, **kwargs)
+            # if appeal.status not in (
+            #         appeal.STATUS_NEW,
+            #         appeal.STATUS_IN_WORK,
+            # ):
+            #     return self.get(request, *args, **kwargs)
             #
             comment_form = AppealCommentForm(
                 data=self.request.POST,
@@ -628,9 +628,9 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
                 return self.get(request, *args, **kwargs)
             #
 
-            if appeal.status != appeal.STATUS_IN_WORK:
-                messages.error(request, 'Заявка уже закрыта')
-                return self.get(request, *args, **kwargs)
+            # if appeal.status != appeal.STATUS_IN_WORK:
+            #     messages.error(request, 'Заявка уже закрыта')
+            #     return self.get(request, *args, **kwargs)
             #
 
             action = self.request.POST.get('action')

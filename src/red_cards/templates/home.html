@@ -130,26 +130,30 @@
                         </div>
                       </div>
                 {% endif %}
-                {% if status.name == status.NAME_CONSIDERATION %}
+                {% if status.card.get_appeal %}
+                {% if status.card.type == status.card.TYPE_RED %}
                   <div class="event-panel__item" style="text-align: center">
+                  {% if status.name == status.NAME_CONSIDERATION %}
                         <p class="timer-out">
                                 Запрос на рассмотрении.
                         </p>
+                {% endif %}
                   <a href="{% url 'appeals-detail-admin' pk=status.card.get_appeal.pk %}" target="_blank">
                   перейти в чат
                   </a>
 
-          {% if status.card.get_appeal.get_comments.count > 0 %}
-            <div class="event-date">
-                <p class="timer-out">
-                    Коментарии: {{ status.card.get_appeal|count_comments:request.user }}
-                {% if status.card.get_appeal|count_new_comments:request.user > 0 %}
-                    , <span style="color: rgb(245, 153, 50);">новых: {{ status.card.get_appeal|count_new_comments:request.user }}</span>
-                    {% endif %}
-                </p>
-            </div>
-          {% endif %}
+                          {% if status.card.get_appeal.get_comments.count > 0 %}
+                            <div class="event-date">
+                                <p class="timer-out">
+                                    Коментарии: {{ status.card.get_appeal|count_comments:request.user }}
+                                {% if status.card.get_appeal|count_new_comments:request.user > 0 %}
+                                    , <span style="color: rgb(245, 153, 50);">новых: {{ status.card.get_appeal|count_new_comments:request.user }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                          {% endif %}
                       </div>
+                {% endif %}
                 {% endif %}
 
                 {% if status.name == status.NAME_ISSUED %}

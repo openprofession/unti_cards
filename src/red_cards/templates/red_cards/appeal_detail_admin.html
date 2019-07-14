@@ -58,6 +58,7 @@
 
         </div>
 
+
       {% if request.user.is_assistant %}
             <div class="event-date">
 
@@ -76,26 +77,26 @@
             </div>
       {% endif %}
       </div>
+
     </div>
 
   </div>
-
-  <div class="section-block__item">
-    <div class="row align-items-center">
+  <div class="section-block__item" style="background-color: lightgoldenrodyellow">
+    <div class="row align-items-center" >
       <div class="col-md-9">
 
-      <div class="form-group">
-          {{ appeal.create_dt|date:"d.m.Y" }}
-          <p class="user-event__text">
-          {{ appeal.description  }}
-              </p>
-      </div>
+          <div class="form-group">
+              {{ appeal.create_dt|date:"d.m.Y" }}
+              <p class="user-event__text">
+              {{ appeal.description  }}
+                  </p>
+          </div>
           {% if appeal.file %}
-      <div class="form-group">
-        <div class="custom-file">
-            <a href="{{ appeal.file.url }}" download>{{ appeal.file.name  }}</a>
-        </div>
-      </div>
+          <div class="form-group">
+            <div class="custom-file">
+                <a href="{{ appeal.file.url }}" download>{{ appeal.file.name  }}</a>
+            </div>
+          </div>
           {% endif %}
       </div>
 
@@ -104,7 +105,7 @@
     </div>
   </div>
 
-    {% if request.user == appeal.executive and appeal.status == appeal.STATUS_IN_WORK %}
+    {% if request.user == appeal.executive %}
       <div class="users-list__item">
         <div class="row align-items-center">
           <div class="col-md-6" style="text-align: center;">
@@ -114,11 +115,14 @@
                     <input type="hidden" name="form_name" value="manage" />
 
                     <input type="hidden" name="appeal" value="{{ appeal.pk }}" />
-
-                    <button type="submit" name="action" value="accept" class="btn btn-outline-primary" >
+                    {% if appeal.status != appeal.STATUS_APPROVED %}
+                    <button type="submit" name="action" value="accept" class="btn btn-outline-success" >
                         Одобрить</button>
-                    <button type="submit" name="action" value="reject" class="btn btn-outline-primary" style="margin-left: 10px;">
+                        {% endif %}
+                    {% if appeal.status != appeal.STATUS_REJECTED %}
+                    <button type="submit" name="action" value="reject" class="btn btn-outline-warning" style="margin-left: 10px;">
                         Отклонить</button>
+                        {% endif %}
 
                 </form>
           </div>
@@ -127,6 +131,9 @@
     {% endif %}
 
 
+</div>
+<h2 class="section-title">Комментарии </h2>
+<div class="section-block event-block">
   <div class="section-block__item">
   {% if not comments %}
     <div class="row align-items-center">
@@ -174,7 +181,7 @@
           {% endfor %}
   </div>
 
-{% if appeal.status == appeal.STATUS_IN_WORK or appeal.status == appeal.STATUS_NEW %}
+{#{% if appeal.status != appeal.STATUS_APPROVED %}#}
   <div class="section-block__item">
     <div class="row align-items-center">
       <div class="col-md-12">
@@ -207,7 +214,7 @@
       </div>
   </div>
 
-{% endif %}
+{#{% endif %}#}
 </div>
 </div>
 {% endblock %}
