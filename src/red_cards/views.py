@@ -599,7 +599,7 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
                 )
             #
         #
-        _selected_user = self.request.GET.get('user', None)
+        _selected_user = self.request.GET.get('user', '')
         selected_leader_id = _selected_user.split(' ', 1)[0].strip('L')
         selected_user = models.User.objects.filter(
             leader_id=selected_leader_id
