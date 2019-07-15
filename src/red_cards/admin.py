@@ -28,6 +28,19 @@ from django.utils.translation import ugettext_lazy as _
 
 class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
+    search_fields = (
+        'email',
+        'username',
+        'first_name',
+        'last_name',
+        'leader_id',
+    )
+    list_filter = (
+        'is_staff',
+        'is_superuser',
+        'is_active',
+        'is_assistant',
+    )
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -77,6 +90,16 @@ class CardAdmin(admin.ModelAdmin):
         'place_uuid',
         'last_status'
     )
+    search_fields = (
+        'leader_id',
+        'reason',
+        'description',
+    )
+    list_filter = (
+        'type',
+        'last_status'
+    )
+    list_per_page = 500
 
     def _status(self, obj):
         assert isinstance(obj, models.Card)
@@ -106,6 +129,16 @@ class StatusAdmin(admin.ModelAdmin):
     readonly_fields = (
         'is_public',
         'user',
+    )
+    list_display_links = (
+        'card',
+        'user',
+    )
+    list_filter = (
+        'system',
+        'name',
+        'is_public',
+        'change_dt',
     )
 
     def save_model(self, request, obj, form, change):
@@ -149,6 +182,16 @@ class AppealAdmin(admin.ModelAdmin):
         'status',
         'card',
     )
+    list_display_links = (
+        'card',
+    )
+    list_filter = (
+        'status',
+        'create_dt',
+    )
+    search_fields = (
+        'description',
+    )
 
 
 @reg_admin_model(models.AppealComment)
@@ -156,4 +199,13 @@ class AppealCommentAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'appeal',
+    )
+    list_display_links = (
+        'appeal',
+    )
+    search_fields = (
+        'text',
+    )
+    list_filter = (
+        'date',
     )
