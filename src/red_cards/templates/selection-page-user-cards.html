@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load widget_tweaks %}
 {% load bootstrap_pagination %}
 {% block page_css %}
@@ -109,7 +110,7 @@
         {% for card in cards %}
       <div class="users-list__item">
         <div class="row align-items-center">
-              <div class="col-lg-9 col-md-8">
+              <div class="col-lg-7 col-md-6">
                 <div class="user-event">
                   <h3 class="user-event__title">
                       {{ card.reason }}
@@ -134,9 +135,185 @@
                   >{{ card.type_verbose }}</span>
                 </div>
               </div>
+
+
+          <div class="col-lg-2 col-md-2">
+              {% if request.user.is_staff %}
+              {% if card.get_status.name != card.get_status.NAME_ELIMINATED %}
+
+
+
+
+<!-- Button trigger modal -->
+<button type="button"
+        id="deactivate-start-btn-{{ card.uuid }}"
+        class="btn btn-outline-info" data-toggle="modal" data-target="#modal-{{ card.uuid }}">
+  деактивировать
+</button>
+
+<!-- Modal -->
+<div class="modal fade bd-example-modal-lg" id="modal-{{ card.uuid }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Деактивация карточки ( ONLY superuser )</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+
+
+
+
+          <div class="row">
+              <div class="col-md-4">
+
+        <button class="btn btn-outline-info" type="button" data-toggle="collapse"
+                data-target="#card-info-{{ card.uuid }}" aria-expanded="false" aria-controls="collapseExample">
+    Карточка
+  </button>
+              </div>
+              <div class="col-md-4">
+
+        <button class="btn btn-outline-info" type="button" data-toggle="collapse"
+                data-target="#card-user-info-{{ card.uuid }}" aria-expanded="false" aria-controls="collapseExample">
+    Пользователь
+  </button>
+              </div>
+          </div>
+
+
+
+      <div class="collapse" id="card-info-{{ card.uuid }}">
+  <div class="card card-body">
+          <h5 style="text-align: center!important;">Карточка</h5>
+          <div class="row">
+              <div class="col-md-4">uuid</div>
+              <div class="col-md-6">{{ card.uuid }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Время нарушения</div>
+              <div class="col-md-6">{{ card.incident_dt }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Источник</div>
+              <div class="col-md-6">{{ card.source }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Статус</div>
+              <div class="col-md-6">
+                  {{ card.get_status.name }}
+                  <br> Установил статус: {{ card.get_status.user.email }}
+                  <br/> {{ card.get_status.change_dt }}
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Тип карточки</div>
+              <div class="col-md-6">{{ card.type }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Время до аппеляции</div>
+              <div class="col-md-6">{{ card.get_seconds_for_appellation }} s</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Причина</div>
+              <div class="col-md-6">{{ card.reason }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Описание</div>
+              <div class="col-md-6">{{ card.description }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-4">Аппеляция</div>
+              <div class="col-md-6">
+                  {{ card.get_appeal.description }}
+                  <br>
+                  <br>Время: {{ card.get_appeal.create_dt }}
+                  <br>Статус: {{ card.get_appeal.status }}
+                  {% if card.get_appeal.file %}
+          <br>Фаил:<a href="{{ card.get_appeal.file.url }}" download>{{ card.get_appeal.file.name  }}</a>
+
+          {% endif %}
+                  <br>Расмотрел: {{ card.get_appeal.executive.email }}
+                  {{ card.get_appeal.executive.date_assign }}
+                  {{ card.get_appeal.executive.date_finished }}
+
+              </div>
+          </div>
+  </div>
+      </div>
+
+
+
+
+      <div class="collapse" id="card-user-info-{{ card.uuid }}">
+  <div class="card card-body">
+
+            <br>
+          <h5 style="text-align: center!important;">Пользователь</h5>
+          <div class="row">
+              <div class="col-md-2">ID</div>
+              <div class="col-md-6">{{ card.get_user.leader_id }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-2">Имя</div>
+              <div class="col-md-6">{{ card.get_user.get_full_name }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-2">Email</div>
+              <div class="col-md-6">{{ card.get_user.email }}</div>
+          </div>
+
+
+          {% with card_statistic=card.get_user.get_card_statistic %}
+              <table class="table table-striped table-bordered" style="margin-top: 10px;">
+              <thead>
+                <tr style="font-size: 10pt;">
+{#                  <th scope="col">Всего</th>#}
+                  <th scope="col">красные</th>
+                  <th scope="col">красные not rejected</th>
+                  <th scope="col">желтые</th>
+                  <th scope="col">зеленые</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+{#                  <th scope="row">{{ card_statistic.total }}</th>#}
+                  <td>{{ card_statistic.red }}</td>
+                  <td>{{ card_statistic.red_not_rejected }}</td>
+                  <td>{{ card_statistic.yellow }}</td>
+                  <td>{{ card_statistic.green }}</td>
+                </tr>
+              </tbody>
+            </table>
+          {% endwith %}
+  </div>
+      </div>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="deactivate-btn-{{ card.uuid }}">Деактивировать</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+              {% endif %}
+              {% endif %}
+          </div>
+
               <div class="col-lg-3 col-md-4">
                 <div class="event-panel">
-                  <div class="event-panel__item">
+                  <div class="event-panel__item" id="card-status-{{ card.uuid }}">
 
                    {% if card.get_status.name == card.get_status.NAME_PUBLISHED %}
                    <div class="event-notice ">Можно оспорить</div>
@@ -171,4 +348,101 @@
 
 </section>
 </main>
+{% endblock %}
+
+{% block page_js %}
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.14/lodash.min.js"></script>
+<script src="{% static 'libs/jquery/jquery.rest.min.js' %}"></script>
+
+
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+    function getCookie(c_name) {
+        if (document.cookie.length > 0) {
+            c_start = document.cookie.indexOf(c_name + "=");
+            if (c_start != -1) {
+                c_start = c_start + c_name.length + 1;
+                c_end = document.cookie.indexOf(";", c_start);
+                if (c_end == -1) c_end = document.cookie.length;
+                return unescape(document.cookie.substring(c_start, c_end));
+            }
+        }
+        return "";
+    }
+
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+// https://stackoverflow.com/questions/28417781/jquery-add-csrf-token-to-all-post-requests-data
+// https://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            }
+        }
+    });
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+var api = new $.RestClient('/api', {
+    cache: 1, //This will cache requests for 1 seconds
+    cachableMethods: ["GET"], //This defines what method types can be cached (this is already set by default)
+    verbs: {
+        'create' : 'POST',
+        'read'   : 'GET',
+        {#'update' : 'PUT',#}
+        'update' : 'PATCH',
+        'replace': 'PUT',
+        'destroy': 'DELETE',
+    }
+});
+window.api_client = api;
+
+api.add('status', {url: '/statuses'});
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+{% for card in cards %}
+
+$('#deactivate-btn-{{ card.uuid }}').click(function() {
+    console.log($(this), '{{ card }}');
+    $(this).text('please wait ...');
+    api.status.create(
+        {
+            'card':     "{{ card.uuid }}",
+            'system':   "cards-deactivate",
+            'name':     "eliminated",
+        }
+    ).done(function (data, textStatus, xhrObject) {
+        console.log('data',data);
+        $('#modal-{{ card.uuid }}').modal('hide');
+        $('#deactivate-start-btn-{{ card.uuid }}')
+            .addClass('btn-outline-secondary')
+            .removeClass('btn-outline-info')
+            .prop( "disabled", true );
+        $('#card-status-{{ card.uuid }}').empty().append(
+            '<div class="event-notice color--green">Деактивирована</div>'
+        )
+    })
+});
+
+/*
+api.feeds.update(
+this.feed.id,
+{'is_active': is_active}
+).done(function (data, textStatus, xhrObject) {
+// console.log('feed_switch_active - done');
+instance.feed.is_active = is_active;
+// console.log('api.feeds.update', data, textStatus, xhrObject)
+instance.bus_events.$emit('feeds:forceUpdate')
+})
+*/
+
+
+{% endfor %}
+});
+</script>
 {% endblock %}

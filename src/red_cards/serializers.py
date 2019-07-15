@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.conf import settings
 from . import models
-from red_cards.models import Card
+from red_cards.models import Card, Status
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -76,6 +76,34 @@ class CardSerializer(serializers.ModelSerializer):
 
         return super(CardSerializer, self).create(validated_data)
 
-    def save(self, **kwargs):
-        obj = super(CardSerializer, self).save(**kwargs)
-        return obj
+    # def save(self, **kwargs):
+    #     obj = super(CardSerializer, self).save(**kwargs)
+    #     return obj
+
+
+class StatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Status
+        # fields = '__all__'
+
+        fields = (
+            'card',
+            'system',
+            'name',
+
+            'change_dt',
+            'user',
+            'is_public',
+        )
+        read_only_fields = (
+            'change_dt',
+            'user',
+            'is_public',
+        )
+    #
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        # validated_data['system'] = models.Status.SYSTEM_API
+        return super(StatusSerializer, self).create(validated_data)

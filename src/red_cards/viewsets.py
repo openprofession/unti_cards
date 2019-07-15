@@ -5,11 +5,11 @@ from rest_framework import viewsets
 from rest_framework import mixins
 
 from red_cards.models import Card, Status
-from red_cards.serializers import CardSerializer
+from red_cards.serializers import CardSerializer, StatusSerializer
 
 from django.utils.translation import ugettext_lazy as _
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
 class ListingFilter(django_filters.FilterSet):
@@ -73,7 +73,7 @@ class CardViewSet(
     serializer_class = CardSerializer
     # filter_backends = (DjangoFilterBackend,)
     filter_class = ListingFilter
-    
+
     # def get_serializer(self, *args, **kwargs):
     #     serializer = super(CardViewSet, self).get_serializer(*args, **kwargs)
     #     return serializer
@@ -81,4 +81,21 @@ class CardViewSet(
     # def create(self, request, *args, **kwargs):
     #     response = super(CardViewSet, self).create(request, *args, **kwargs)
     #     return response
+
+
+class StatusViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+        Статус карточек - доступно только для суперпользователя!
+    """
+    permission_classes = (
+        IsAdminUser,  # only for staff user
+    )
+
+    queryset = Status.objects.all()
+    serializer_class = StatusSerializer
+
 
