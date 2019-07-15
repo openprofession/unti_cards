@@ -16,15 +16,36 @@
     <form class="" action="" method="get">
     <div class="row align-items-center">
 
-      <div class="col-md-4">
+      <div class="col-md-2">
         <h1 class="section-title">Заявки</h1>
       </div>
+    </div>
+
+    <div class="row align-items-center">
+<!-- --------------------------------------------------------------------- -->
+
+    <div class="col-md-4">
+      <div class="form-group" style="padding: 0">
+        <select class="selectpicker form-control search_block" id="sls1"
+                data-live-search="true" style="padding: 0!important;"
+                name="user"
+        >
+            {% for user in all_users %}
+                <option data-tokens="{{ user.leader_id }}" {% if user == selected_user %}selected{% endif %}>L{{ user.leader_id }} {{ user.get_full_name }} ({{ user.count_appeals }})</option>
+            {% endfor %}
+        </select>
+      </div>
+    </div>
+<!-- --------------------------------------------------------------------- -->
+
               <div class="col-md-3">
                 <div class="form-group">
 {#              {{ filters_form.status.label_tag }}#}
               {{ filters_form.status|attr:"class:form-control selectpicker search_block"}}
                 </div>
             </div>
+
+
               <div class="col-md-3">
                 <div class="form-group">
 {#              {{ filters_form.status.label_tag }}#}
@@ -38,6 +59,7 @@
         </div>
       </div>
       </div>
+
 {% comment %}
       <div class="col-md-7">
 
@@ -87,12 +109,12 @@
       <div class="col-md-2">
         <h5 >Статистика</h5>
       </div>
-        <div class="col-md-10" style="font-size: 11pt;">
-        <span style="padding: 0 8px; color:#BC6F12;">Не просмотрено: {{ appeals_stats.new }}</span>
-        <span style="padding: 0 8px;  color:#165899;">На рассмотрении: {{ appeals_stats.in_work }}</span>
-        <span style="padding: 0 8px; color: gray;">Принято: {{ appeals_stats.approved }}</span>
-        <span style="padding: 0 8px; color: gray;">Отказ: {{ appeals_stats.rejected }}</span>
-        <span style="padding: 0 8px; color: #0B710B;">C новыми сообщениями: {{ appeals_stats.has_new_messages }}</span>
+        <div class="col-md-10" style="font-size: 11pt; padding: 0;">
+        <span style="padding: 0 7px; color:#BC6F12;">Не просмотрено: {{ appeals_stats.new }}</span>
+        <span style="padding: 0 7px;  color:#165899;">На рассмотрении: {{ appeals_stats.in_work }}</span>
+        <span style="padding: 0 7px; color: gray;">Принято: {{ appeals_stats.approved }}</span>
+        <span style="padding: 0 7px; color: gray;">Отказ: {{ appeals_stats.rejected }}</span>
+        <span style="padding: 0 7px; color: #0B710B;">C новыми сообщениями: {{ appeals_stats.has_new_messages }}</span>
         </div>
     </div>
     </div>

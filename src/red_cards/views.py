@@ -539,6 +539,16 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         appeals = models.Appeal.objects.all().order_by(
             '-create_dt'
         )
+
+        all_users = models.User.objects.filter(
+            leader_id__isnull=False,
+        ).filter(
+            leader_id__in=models.Card.objects.filter(
+                uuid__in=models.Appeal.objects.all().values('card__uuid')
+            ).values('leader_id'),
+        ).order_by(
+            'first_name', 'last_name', 'username'
+        ).all()
         # Вывод статистики: - общая без учета фильтров
         #       Не просмотрено,
         #       На рассмотрении,
@@ -591,6 +601,7 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         #
 
         context.update({
+            'all_users':          all_users,
             'appeals':          appeals,
             'filters_form':     filters_form,
             'appeals_stats':    appeals_stats,

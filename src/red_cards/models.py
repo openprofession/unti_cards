@@ -52,6 +52,19 @@ class User(AbstractUser):
     def get_full_name(self):
         return ' '.join(filter(None, [self.last_name, self.first_name]))
 
+    def count_appeals(self):
+        return User.objects.filter(
+            pk=self.pk,
+            leader_id__isnull=False,
+        ).filter(
+            leader_id__in=Card.objects.filter(
+                leader_id=self.leader_id,
+                uuid__in=Appeal.objects.all().values('card__uuid')
+            ).values('leader_id'),
+        ).order_by(
+            'first_name', 'last_name', 'username'
+        ).all().count()
+
 
 class Status(models.Model):
     class Meta:
