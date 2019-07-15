@@ -599,8 +599,21 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
                 )
             #
         #
+        _selected_user = self.request.GET.get('user', None)
+        selected_leader_id = _selected_user.split(' ', 1)[0].strip('L')
+        selected_user = models.User.objects.filter(
+            leader_id=selected_leader_id
+        ).first()
+        if selected_user:
+            appeals = appeals.filter(
+                card__uuid__in=models.Card.objects.filter(
+                    leader_id=selected_user.leader_id
+                ).all()
+            ).all()
+        #
 
         context.update({
+            'selected_user':          selected_user,
             'all_users':          all_users,
             'appeals':          appeals,
             'filters_form':     filters_form,
