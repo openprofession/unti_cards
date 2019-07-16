@@ -872,7 +872,7 @@ class SearchUserCardsFilterForm(forms.Form):
             (STATUS_ALL,                        _('Показать все')),
         ),
         required=False,
-        initial=models.Card.TYPE_RED,
+        # initial=models.Card.TYPE_RED,
     )
 
 
@@ -925,7 +925,14 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
                 leader_id=selected_user
             ).first()
         #
-        filters_form = SearchUserCardsFilterForm(self.request.GET)
+
+        # status = TYPE_RED by default
+        _data = self.request.GET.dict()
+        # ----------------------^^^^^^ IMPORTANT or will be list instead value
+        if 'type' not in _data:
+            _data['type'] = models.Card.TYPE_RED
+        #
+        filters_form = SearchUserCardsFilterForm(_data)
 
         cards = []
         if selected_user:
