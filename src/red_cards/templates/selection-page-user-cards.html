@@ -30,7 +30,7 @@
 
 <!-- --------------------------------------------------------------------- -->
 
-    <div class="col-md-5">
+    <div class="col-md-4">
       <div class="form-group" style="padding: 0">
         <select class="selectpicker form-control search_block" id="sls1"
                 data-live-search="true" style="padding: 0!important;"
@@ -42,16 +42,22 @@
         </select>
       </div>
     </div>
-          <div class="col-md-5">
+          <div class="col-md-3">
                 <div class="form-group">
 {#              {{ filters_form.status.label_tag }}#}
               {{ filters_form.status|attr:"class:form-control selectpicker search_block"}}
                 </div>
             </div>
+          <div class="col-md-3">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.type|attr:"class:form-control selectpicker search_block"}}
+                </div>
+            </div>
     <div class="col-md-2">
       <div class="form-group" style="padding: 0">
         <div class="form-button-group__item">
-          <button class="btn btn-primary" type="submit">выбрать</button>
+          <button class="btn btn-primary" type="submit" style="min-width: 100px;">выбрать</button>
         </div>
       </div>
     </div>
