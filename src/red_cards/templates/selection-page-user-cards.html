@@ -165,8 +165,7 @@
 
 
 
-
-
+{% comment %}
           <div class="row">
               <div class="col-md-4">
 
@@ -292,8 +291,9 @@
   </div>
       </div>
 
-
+{% endcomment %}
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
         <button type="button" class="btn btn-primary" id="deactivate-btn-{{ card.uuid }}">Деактивировать</button>
@@ -328,7 +328,11 @@
                   {% endif %}
 
                    {% if card.get_status.name == card.get_status.NAME_ELIMINATED %}
-                   <div class="event-notice color--green">Деактивирована</div>
+                    {% if card.get_status.system == card.get_status.SYSTEM_CARDS_APPEAL %}
+                    <div class="event-notice color--green">Успешно оспорена</div>
+                    {% else %}
+                    <div class="event-notice color--green">Деактивирована</div>
+                    {% endif %}
                   {% endif %}
 
 
