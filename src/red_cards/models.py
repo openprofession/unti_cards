@@ -6,6 +6,8 @@ import uuid
 from django.utils import timezone
 from app_django.tools import print_seconds
 from django.db import transaction
+import re
+import hashlib
 
 # User = get_user_model()
 
@@ -419,6 +421,50 @@ class ClassRum(models.Model):
     )
 
 
+class AppealTagManager(models.Manager):
+    """   """
+
+    def create(self, *, name, **kwargs):
+        return super(AppealTagManager, self).create(
+            name_hash=AppealTag.gen_hash(name),
+            name=name,
+            **kwargs
+        )
+
+
+class AppealTag(models.Model):
+    objects = AppealTagManager()
+
+    class Meta:
+        verbose_name = _('Appeal Tag')
+        verbose_name_plural = _('Appeal Tags')
+
+    #
+    @staticmethod
+    def gen_hash(name):
+        name_hash = re.sub(r'[^\w]+', '', name.lower())
+        if name_hash == '':
+            return None
+        #
+        result = hashlib.md5(name_hash.encode()).hexdigest()
+        return result
+
+    name_hash = models.CharField(
+        verbose_name=_('Hash of tag'),
+        max_length=255,
+        unique=True,
+        null=False, blank=False,
+    )
+    name = models.CharField(
+        verbose_name=_('Name of tag'),
+        max_length=255,
+        null=False, blank=False,
+    )
+
+    def __str__(self):
+        return '{}'.format(self.name)
+
+
 class Appeal(models.Model):
     class Meta:
         verbose_name = _('Appeal')
@@ -585,8 +631,21 @@ class Appeal(models.Model):
             seen_by_users=user
         ).count()
 
+    tag = models.ForeignKey(
+        AppealTag,
+        verbose_name=_('Тег'),
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+
+    )
+
 
 class AppealComment(models.Model):
+    class Meta:
+        verbose_name = _('Appeal Comment')
+        verbose_name_plural = _('Appeal Comments')
+
+    #
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

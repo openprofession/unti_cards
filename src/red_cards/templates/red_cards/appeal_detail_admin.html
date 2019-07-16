@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 
+{% block page_css %}
+    <style>
+    .tag {
+
+    }
+
+    </style>
+{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -81,10 +89,61 @@
     </div>
 
   </div>
-  <div class="section-block__item" style="background-color: lightgoldenrodyellow">
+
+  <div class="section-block__item" >
+
+
+            <form action="" method="POST">
+                {% csrf_token %}
+                {{ appeal_tag_form.form_name}}
+                {{ appeal_tag_form.appeal}}
+
+    <div class="row align-items-center" >
+      <div class="col-md-3">
+        <h4>Апелляция:</h4>
+      </div>
+
+        {% if request.user.is_assistant %}
+
+          <div class="col-md-1">
+              <div class="form-group">
+          тег:
+          </div>
+
+          </div>
+          <div class="col-md-3">
+              <div class="form-group">
+                        {% if request.user == appeal.executive %}
+                  {{ appeal_tag_form.tag|attr:"class:form-control selectpicker search_block tag"}}
+                        {% else %}
+                            {% if appeal.tag %}
+                                {{ appeal.tag.name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endif %}
+              </div>
+          </div>
+
+          <div class="col-md-2">
+                        {% if request.user == appeal.executive %}
+              <div class="form-group" >
+                        <button type="submit"  class="btn btn-outline-secondary"
+                                style="min-width: 100px"
+                        >
+                            сохранить тег
+                        </button>
+              </div>
+                        {% endif %}
+          </div>
+
+        {% endif %}
+    </div>
+                </form>
+
+
     <div class="row align-items-center" >
       <div class="col-md-9">
-
           <div class="form-group">
               {{ appeal.create_dt|date:"d.m.Y" }}
               <p class="user-event__text">
@@ -104,6 +163,8 @@
 
     </div>
   </div>
+
+
 
     {% if request.user == appeal.executive %}
       <div class="users-list__item">

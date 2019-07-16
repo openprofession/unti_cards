@@ -42,7 +42,7 @@
     </div>
 <!-- --------------------------------------------------------------------- -->
 
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <div class="form-group">
 {#              {{ filters_form.status.label_tag }}#}
               {{ filters_form.status|attr:"class:form-control selectpicker search_block"}}
@@ -50,10 +50,17 @@
             </div>
 
 
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <div class="form-group">
 {#              {{ filters_form.status.label_tag }}#}
               {{ filters_form.new_messages|attr:"class:form-control selectpicker search_block"}}
+                </div>
+            </div>
+
+              <div class="col-md-2">
+                <div class="form-group">
+{#              {{ filters_form.status.label_tag }}#}
+              {{ filters_form.tag|attr:"class:form-control selectpicker search_block"}}
                 </div>
             </div>
     <div class="col-md-2">
@@ -168,6 +175,12 @@
                     {% endif %}
             </div>
             {% endif %}
+            {% if  appeal.tag %}
+            <div class="event-date ">
+                Тег:
+                <span style="color: royalblue">{{ appeal.tag.name }}</span>
+            </div>
+          {% endif %}
           </div>
             {% include 'red_cards/appeal_status.html' %}
 

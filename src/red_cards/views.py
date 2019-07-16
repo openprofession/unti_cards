@@ -8,7 +8,8 @@ from red_cards.utils import update_events_data, update_enrolls_data
 from django.utils.translation import ugettext_lazy as _
 from . import models
 from django.contrib.auth.views import logout_then_login as base_logout
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, \
+    PermissionRequiredMixin
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
@@ -423,7 +424,7 @@ class AppealsFormView(FormView, BaseAppealsView):
 
             if card.get_status().name != models.Status.NAME_PUBLISHED:
                 messages.error(request, 'Карточка уже оспорена')
-                return self.get(request, *args, **kwargs)
+                return redirect(request.get_full_path())
             #
             if int(self.request.user.leader_id) != int(card.leader_id):
                 # only own car can be challenge
@@ -461,7 +462,7 @@ class ExecutiveMixin:
             messages.error(
                 request, 'Заявка не найденна в базе данных.'
             )
-            return self.get(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         #
         # if appeal.status in (
         #         appeal.STATUS_APPROVED, appeal.STATUS_REJECTED
@@ -469,7 +470,7 @@ class ExecutiveMixin:
         #     messages.error(
         #         request, 'Данная заявка закрыта.'
         #     )
-        #     return self.get(request, *args, **kwargs)
+        #     return redirect(request.get_full_path())
         #
         action = self.request.POST.get('action')
         if action == 'assign':
@@ -488,10 +489,10 @@ class ExecutiveMixin:
                 )
             )
         else:
-            return self.get(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         #
 
-        return self.get(request, *args, **kwargs)
+        return redirect(request.get_full_path())
 
 
 class AppealListFilterForm(forms.Form):
@@ -509,7 +510,7 @@ class AppealListFilterForm(forms.Form):
             (models.Appeal.STATUS_IN_WORK,      _('На рассмотрении')),
             (models.Appeal.STATUS_APPROVED,     _('Принято')),
             (models.Appeal.STATUS_REJECTED,     _('Отказ')),
-            ('',     _('все')),
+            ('all', _('все')),
         ),
         # initial=models.Appeal.STATUS_NEW,
         required=False,
@@ -525,10 +526,28 @@ class AppealListFilterForm(forms.Form):
             ('only_new',            _('есть новые сообщения')),
             ('has_comments',        _('есть сообщения')),
             ('no_comments',         _('без сообщений')),
-            ('',                    _('все')),
+            ('all', _('все')),
         ),
         required=False,
     )
+
+    tag = forms.ModelChoiceField(
+        label=_('по тегу'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('по тегу'),
+        }),
+        queryset=models.AppealTag.objects.all(),
+        empty_label=_('без тега'),
+        required=False,
+    )
+
+    def full_clean(self):
+        super(AppealListFilterForm, self).full_clean()
+        for k in self.cleaned_data:
+            if self.cleaned_data[k] == 'all':
+                self.cleaned_data[k] = None
+        #   #
 
 
 class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
@@ -580,6 +599,9 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
             filters = filters_form.cleaned_data
             if filters.get('status', ''):
                 appeals = appeals.filter(status=filters['status'])
+            #
+            if filters.get('tag', ''):
+                appeals = appeals.filter(tag=filters['tag'])
             #
             if filters.get('new_messages', '') == 'no_comments':
                 appeals = appeals.exclude(
@@ -640,9 +662,43 @@ class ArgsAppealDetailAdminView(forms.Form):
         ).first()
 
 
+class AppealTagForm(forms.Form):
+    FORM_NAME = 'appeal_tag'
+
+    form_name = forms.CharField(
+        widget=forms.HiddenInput,
+        initial=FORM_NAME,
+    )
+
+    appeal = forms.IntegerField(
+        widget=forms.HiddenInput,
+    )
+
+    tag = forms.ModelChoiceField(
+        label=_('Выберите тег апеляции'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('тег апеляции'),
+        }),
+        queryset=models.AppealTag.objects.all(),
+        empty_label=_('без тега'),
+        required=False,
+    )
+
+    def save(self):
+        appeal = models.Appeal.objects.filter(
+            id=self.cleaned_data.get('appeal')
+        ).first()
+        if appeal:
+            appeal.tag = self.cleaned_data.get('tag')
+            appeal.save()
+        #
+        return appeal
+
+
 class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
     template_name = 'red_cards/appeal_detail_admin.html'
-    
+
     def has_permission(self):
         # return super(AppealDetailAdminView, self).has_permission()
         return True
@@ -679,6 +735,10 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
         if not self._has_permission_for_appeal(**kwargs):
             return self.handle_no_permission()
         #
+        appeal_tag_form = AppealTagForm(initial={
+            'appeal': appeal.pk,
+            'tag': appeal.tag,
+        })
         comment_form = getattr(self, '_comment_form', AppealCommentForm())
         #
         comments = appeal.get_comments()
@@ -692,6 +752,8 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             'appeal':           appeal,
             'comment_form':     comment_form,
             'comments':         comments,
+
+            'appeal_tag_form':  appeal_tag_form,
         })
         return context
 
@@ -709,7 +771,7 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             #         appeal.STATUS_NEW,
             #         appeal.STATUS_IN_WORK,
             # ):
-            #     return self.get(request, *args, **kwargs)
+            #     return redirect(request.get_full_path())
             #
             comment_form = AppealCommentForm(
                 data=self.request.POST,
@@ -721,32 +783,39 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             else:
                 setattr(self, '_comment_form', comment_form)
             #
-            return self.get(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         #   #
 
         # ------------------------------------------------------------ #
         if not super(AppealDetailAdminView, self).has_permission():
             return self.handle_no_permission()
         #
+        if form_name == AppealTagForm.FORM_NAME:
+            form = AppealTagForm(data=self.request.POST)
+            if form.is_valid():
+                form.save()
+            #
+            return redirect(request.get_full_path())
         if form_name == 'executive':
-            return self.handle_executive(request, *args, **kwargs)
+            self.handle_executive(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         elif form_name == 'manage':
             appeal = models.Appeal.objects.filter(
                 pk=self.request.POST.get('appeal')
             ).first()
             if appeal is None:
                 messages.error(request, 'Заявка не найдена в базе данных')
-                return self.get(request, *args, **kwargs)
+                return redirect(request.get_full_path())
             #
             assert isinstance(appeal, models.Appeal)
             if request.user != appeal.executive:
                 messages.error(request, 'Заявку рассматривает другой модератор')
-                return self.get(request, *args, **kwargs)
+                return redirect(request.get_full_path())
             #
 
             # if appeal.status != appeal.STATUS_IN_WORK:
             #     messages.error(request, 'Заявка уже закрыта')
-            #     return self.get(request, *args, **kwargs)
+            #     return redirect(request.get_full_path())
             #
 
             action = self.request.POST.get('action')
@@ -755,11 +824,11 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
             elif action == 'reject':
                 appeal.reject(request.user)
             else:
-                return self.get(request, *args, **kwargs)  # if hacker
+                return redirect(request.get_full_path())  # if hacker
             #
-            return self.get(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         else:
-            return self.get(request, *args, **kwargs)
+            return redirect(request.get_full_path())
         #
 
 

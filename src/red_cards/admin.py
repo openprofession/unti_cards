@@ -181,9 +181,11 @@ class AppealAdmin(admin.ModelAdmin):
         'create_dt',
         'status',
         'card',
+        'tag',
     )
     list_display_links = (
         'card',
+        'tag',
     )
     list_filter = (
         'status',
@@ -208,4 +210,17 @@ class AppealCommentAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'date',
+    )
+
+
+@reg_admin_model(models.AppealTag)
+class AppealTagAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'name_hash',
+        'name',
+    )
+    search_fields = (
+        'name_hash',
+        'name',
     )
