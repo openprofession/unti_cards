@@ -190,6 +190,7 @@ class AppealAdmin(admin.ModelAdmin):
     list_filter = (
         'status',
         'create_dt',
+        'tag',
     )
     search_fields = (
         'description',
