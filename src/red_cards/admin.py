@@ -224,3 +224,6 @@ class AppealTagAdmin(admin.ModelAdmin):
         'name_hash',
         'name',
     )
+    readonly_fields = (
+        'name_hash',
+    )

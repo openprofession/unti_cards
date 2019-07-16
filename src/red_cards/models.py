@@ -421,19 +421,7 @@ class ClassRum(models.Model):
     )
 
 
-class AppealTagManager(models.Manager):
-    """   """
-
-    def create(self, *, name, **kwargs):
-        return super(AppealTagManager, self).create(
-            name_hash=AppealTag.gen_hash(name),
-            name=name,
-            **kwargs
-        )
-
-
 class AppealTag(models.Model):
-    objects = AppealTagManager()
 
     class Meta:
         verbose_name = _('Appeal Tag')
@@ -463,6 +451,10 @@ class AppealTag(models.Model):
 
     def __str__(self):
         return '{}'.format(self.name)
+    
+    def save(self, *args, **kwargs):
+        self.name_hash = self.gen_hash(self.name)
+        return super(AppealTag, self).save(*args, **kwargs)
 
 
 class Appeal(models.Model):
