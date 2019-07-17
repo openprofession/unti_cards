@@ -525,13 +525,14 @@ class Appeal(models.Model):
     def create_new_appeal(
             cls, *,
             user,
-            description, file=None, card
+            description, file=None, card, tag=None,
     ):
         new_appeal = cls.objects.create(
             status=cls.STATUS_NEW,
             description=description,
             file=file,
             card=card,
+            tag=tag,
         )
         card.set_status(
             name=Status.NAME_CONSIDERATION,

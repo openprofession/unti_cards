@@ -353,6 +353,18 @@ class AppealForm(forms.Form):
         }),
         required=False,
     )
+
+    tag = forms.ModelChoiceField(
+        label=_('тег'),
+        label_suffix='',
+        widget=forms.Select(attrs={
+            'title': _('выберите тег'),
+        }),
+        queryset=models.AppealTag.objects.all(),
+        empty_label=_('без тега'),
+        required=False,
+    )
+
     file = forms.FileField(
         label=_('Выберите файл'),
         label_suffix='',
@@ -371,6 +383,7 @@ class AppealForm(forms.Form):
             user=user,
             card=card,
             description=self.cleaned_data.get('description'),
+            tag=self.cleaned_data.get('tag'),
             file=self.cleaned_data.get('file'),
 
         )
