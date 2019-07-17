@@ -551,7 +551,7 @@ class AppealListFilterForm(forms.Form):
             'title': _('по тегу'),
         }),
         queryset=models.AppealTag.objects.all(),
-        empty_label=_('без тега'),
+        empty_label=_('все'),
         required=False,
     )
 
