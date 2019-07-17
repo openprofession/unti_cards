@@ -89,6 +89,7 @@ class Status(models.Model):
     SYSTEM_CARDS_ASSISTANT = 'cards-assistant'          # 4 Ассистент выдает карточку
     SYSTEM_CARDS_CONSIDERATION = 'cards-consideration'  # 5 Участник оспаривает карточку
     SYSTEM_CARDS_APPEAL = 'cards-appeal'                # 6 Модератор апрувит/отклоняет оспаривание
+    SYSTEM_CARDS_DEACTIVATE = 'cards-deactivate'                # 6 Модератор апрувит/отклоняет оспаривание
 
     SYSTEM_API = 'api'
     SYSTEM_LEADER = 'leader'
@@ -101,6 +102,7 @@ class Status(models.Model):
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
         (SYSTEM_CARDS_CONSIDERATION, _('Cards-consideration')),
         (SYSTEM_CARDS_APPEAL, _('Cards-appeal')),
+        (SYSTEM_CARDS_DEACTIVATE, _('Cards-deactivate')),
 
         (SYSTEM_API, _('Api')),
         (SYSTEM_LEADER, _('Leader')),

@@ -143,22 +143,92 @@
               <div class="col-lg-3 col-md-4">
                 <div class="event-panel">
                   <div class="event-panel__item">
+                {% if card.type == card.TYPE_RED %}
 
                    {% if card.get_status.name == card.get_status.NAME_PUBLISHED %}
-                   <div class="event-notice ">Можно оспорить</div>
+                        <div class="event-notice ">
+                            Можно оспорить
+                        </div>
+                        <div class="event-notice ">
+                            <button type="button"
+                                    id="deactivate-start-btn-{{ card.uuid }}"
+                                    class="btn btn-outline-info" data-toggle="modal"
+                                    data-target="#modal-{{ card.uuid }}">
+                              деактивировать
+                            </button>
+                        </div>
                   {% endif %}
 
-                   {% if card.get_status.name == card.get_status.NAME_ISSUED %}
-                   <div class="event-notice color--green">Выдана</div>
+
+                   {% if card.get_status.system == card.get_status.SYSTEM_CARDS_APPEAL %}
+                       {% if card.get_status.name == card.get_status.NAME_ISSUED  %}
+                        <div class="event-notice color--green">
+                             Оспаривание отклонено
+                        </div>
+                       <a class="btn btn-outline-secondary"  target="_blank"
+                          href="{% url 'appeals-detail-admin' card.get_appeal.pk %}">
+                            Перейти к заявке
+                       </a>
+                        {% endif %}
                   {% endif %}
+
+                  {% if card.get_status.name == card.get_status.NAME_ISSUED  %}
+                       {% if card.get_status.system == card.get_status.SYSTEM_CARDS_ISSUE %}
+                            <div class="event-notice color--green">
+                                Выдана
+                            </div>
+                        <div class="event-notice ">
+                            <button type="button"
+                                    id="deactivate-start-btn-{{ card.uuid }}"
+                                    class="btn btn-outline-info" data-toggle="modal"
+                                    data-target="#modal-{{ card.uuid }}">
+                              деактивировать
+                            </button>
+                        </div>
+                      {% endif %}
+                  {% endif %}
+
 
                    {% if card.get_status.name == card.get_status.NAME_CONSIDERATION %}
-                   <div class="event-notice color--blue">Оспорена - на рассмотрении</div>
+                        <div class="event-notice color--blue">
+                            Оспорена-на рассмотрении
+                        </div>
+                       <a class="btn btn-outline-secondary"  target="_blank"
+                          href="{% url 'appeals-detail-admin' card.get_appeal.pk %}">
+                            Перейти к заявке
+                       </a>
                   {% endif %}
 
                    {% if card.get_status.name == card.get_status.NAME_ELIMINATED %}
-                   <div class="event-notice color--green">Деактивирована</div>
+                        {% if card.get_status.system == card.get_status.SYSTEM_CARDS_APPEAL %}
+                            <div class="event-notice color--green">
+                                 Успешно оспорена
+                            </div>
+                           <a class="btn btn-outline-secondary" target="_blank"
+                              href="{% url 'appeals-detail-admin' card.get_appeal.pk %}">
+                                Перейти к заявке
+                           </a>
+                        {% endif %}
+
+                        {% if card.get_status.system == card.get_status.SYSTEM_CARDS_DEACTIVATE %}
+                            <div class="event-notice color--green">
+                                Деактивирована
+                            </div>
+                        {% endif %}
+
                   {% endif %}
+                {% else %}
+                    {% if card.get_status.name == card.get_status.NAME_ISSUED  %}
+                            <div class="event-notice color--green">
+                                Выдана
+                            </div>
+                    {% endif %}
+                    {% if card.get_status.name == card.get_status.NAME_ELIMINATED  %}
+                        <div class="event-notice color--green">
+                            Деактивирована
+                        </div>
+                    {% endif %}
+                {% endif %}
 
 
                   </div>
@@ -166,6 +236,58 @@
               </div>
             </div>
           </div>
+
+
+            <!-- ------------------------------------------------- -->
+            <!-- Modal -->
+<div class="modal fade bd-example-modal-lg" id="modal-{{ card.uuid }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Деактивация карточки</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <div class="row">
+              <div class="col-md-2">Пользователь</div>
+              <div class="col-md-2">ID {{ card.get_user.leader_id }}</div>
+              <div class="col-md-8">{{ card.get_user.get_full_name }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-2">Причина</div>
+              <div class="col-md-10">{{ card.reason }}</div>
+          </div>
+          <div class="row">
+              <div class="col-md-2">Описание</div>
+              <div class="col-md-10">{{ card.description }}</div>
+          </div>
+          <br>
+          <br>
+          <h5 style="text-align: center!important;">Деактивировать карточку?</h5>
+
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+          <form action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_name" value="deactivate" />
+            <input type="hidden" name="card" value="{{ card.uuid }}" />
+
+            <button class="btn btn-primary" type="submit" name="submit" value="Submit">Деактивировать</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+            <!-- ------------------------------------------------- -->
+
+
         {% endfor %}
 
 

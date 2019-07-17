@@ -902,7 +902,7 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
         - по умолчанию Активные
     3. Визуальные статусы и кнопки - изменения касаются только красных карточек:
         issued Cards-issue:  визульный статус: Выдана + кнопка Деактивировать
-        issued Сards-appeal : Оспаривание отклонено + кнопка Перейти к заявке
+        issued Cards-appeal : Оспаривание отклонено + кнопка Перейти к заявке
         -Consideration system любой: Оспорена-на рассмотрении + кнопка "Перейти к заявке"
         -published system любой: Можно оспорить + кнопка Деактивировать
         -eliminated Cards-appeal: Успешно оспорена + кнопка "Перейти к заявке"
@@ -967,3 +967,24 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
             'filters_form':   filters_form,
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        if 'card' not in request.POST:
+            return self.get(request, *args, **kwargs)
+        #
+        card = models.Card.objects.filter(
+            uuid=request.POST.get('card')
+        ).first()
+        if not card:
+            return self.get(request, *args, **kwargs)
+        #
+        card.set_status(
+            name=models.Status.NAME_ELIMINATED,
+            system=models.Status.SYSTEM_CARDS_DEACTIVATE,
+            user=request.user,
+        )
+        messages.success(request, 'Карточка "{}" успешно деактивированна'.format(
+            card.reason
+        ))
+        return redirect(request.get_full_path())
+
