@@ -918,6 +918,16 @@ class SearchView(RolePermissionMixin, TemplateView):
 # ############################################################################ #
 
 class SearchUserCardsFilterForm(forms.Form):
+    STATUS_ALL = '_all'
+
+    def full_clean(self):
+        super(SearchUserCardsFilterForm, self).full_clean()
+        for k in self.cleaned_data:
+            if self.cleaned_data[k] == self.STATUS_ALL:
+                self.cleaned_data[k] = None
+        #   #
+
+    STATUS_ACTIVE = '_active'
     status = forms.ChoiceField(
         label=_('Выберите статус карточки'),
         label_suffix='',
@@ -925,13 +935,26 @@ class SearchUserCardsFilterForm(forms.Form):
             'title': _('По статусу'),
         }),
         choices=(
+            (STATUS_ACTIVE,                     _('Активные')),
+            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
             (models.Status.NAME_PUBLISHED,      _('Можно оспорить')),
             (models.Status.NAME_ISSUED,         _('Выдана')),
             (models.Status.NAME_CONSIDERATION,  _('Оспорена - на рассмотрении')),
-            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
-            ('',                                _('Показать все')),
+            (STATUS_ALL,                        _('Показать все')),
         ),
         required=False,
+    )
+    type = forms.ChoiceField(
+        label=_('Тип карточки'),
+        widget=forms.Select(attrs={
+            'title': _('По типу'),
+        }),
+        choices=(
+            *models.Card.TYPE_CHOICES,
+            (STATUS_ALL,                        _('Показать все')),
+        ),
+        required=False,
+        # initial=models.Card.TYPE_RED,
     )
 
 
@@ -948,6 +971,24 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
         issued - Выдана
         Consideration - Оспорена. На рассмотрении
         eliminated - Деактивирована
+
+    DOD:
+    1. Доступно только ассистенту
+    2. Добавлен фильтр по типу карточки -
+        Красная, Желтая, Зеленая, Все
+        - по умолчанию Красная
+    3. Добавлен фильтра по статусу -
+        Активные(все кроме eliminated)/
+        Деактивированные(eliminated)/
+        Все,
+        - по умолчанию Активные
+    3. Визуальные статусы и кнопки - изменения касаются только красных карточек:
+        issued Cards-issue:  визульный статус: Выдана + кнопка Деактивировать
+        issued Cards-appeal : Оспаривание отклонено + кнопка Перейти к заявке
+        -Consideration system любой: Оспорена-на рассмотрении + кнопка "Перейти к заявке"
+        -published system любой: Можно оспорить + кнопка Деактивировать
+        -eliminated Cards-appeal: Успешно оспорена + кнопка "Перейти к заявке"
+        -eliminated Cards-deactivate: Деактивирована
     """
     template_name = 'selection-page-user-cards.html'
 
@@ -966,12 +1007,18 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
                 leader_id=selected_user
             ).first()
         #
-        filters_form = SearchUserCardsFilterForm(self.request.GET)
+
+        # status = TYPE_RED by default
+        _data = self.request.GET.dict()
+        # ----------------------^^^^^^ IMPORTANT or will be list instead value
+        if 'type' not in _data:
+            _data['type'] = models.Card.TYPE_RED
+        #
+        filters_form = SearchUserCardsFilterForm(_data)
 
         cards = []
         if selected_user:
             cards = models.Card.objects.filter(
-                type=models.Card.TYPE_RED,
                 leader_id=selected_user.leader_id,
                 last_status__in=(
                     models.Status.NAME_PUBLISHED,
@@ -984,10 +1031,15 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
             if filters_form.is_valid():
                 filters = filters_form.cleaned_data
                 if filters.get('status', ''):
-                    cards = cards.filter(last_status=filters['status'])
-                #
-            #
-        #
+                    if filters['status'] == filters_form.STATUS_ACTIVE:
+                        cards = cards.exclude(  # <== (!)
+                            last_status=models.Status.NAME_ELIMINATED)
+                    else:
+                        cards = cards.filter(last_status=filters['status'])
+                    #
+                if filters.get('type', ''):
+                    cards = cards.filter(type=filters['type'])
+        #   #   #
 
         context.update({
             'all_users':        all_users,
@@ -997,3 +1049,24 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
             'filters_form':   filters_form,
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        if 'card' not in request.POST:
+            return self.get(request, *args, **kwargs)
+        #
+        card = models.Card.objects.filter(
+            uuid=request.POST.get('card')
+        ).first()
+        if not card:
+            return self.get(request, *args, **kwargs)
+        #
+        card.set_status(
+            name=models.Status.NAME_ELIMINATED,
+            system=models.Status.SYSTEM_CARDS_DEACTIVATE,
+            user=request.user,
+        )
+        messages.success(request, 'Карточка "{}" успешно деактивированна'.format(
+            card.reason
+        ))
+        return redirect(request.get_full_path())
+
