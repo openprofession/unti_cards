@@ -61,20 +61,6 @@ class User(AbstractUser):
             ).values('uuid')
         ).count()
 
-    def get_card_statistic(self):
-        total = Card.objects.filter(leader_id=self.leader_id)
-        return {
-            'total':    total.count(),
-            'red':      total.filter(type=Card.TYPE_RED).count(),
-            'red_not_rejected':      total.filter(
-                type=Card.TYPE_RED,
-            ).exclude(
-                last_status=Status.NAME_REJECTED,
-            ).count(),
-            'yellow':   total.filter(type=Card.TYPE_YELLOW).count(),
-            'green':    total.filter(type=Card.TYPE_GREEN).count(),
-        }
-
 
 class Status(models.Model):
     class Meta:
@@ -105,7 +91,6 @@ class Status(models.Model):
     SYSTEM_CARDS_ASSISTANT = 'cards-assistant'          # 4 Ассистент выдает карточку
     SYSTEM_CARDS_CONSIDERATION = 'cards-consideration'  # 5 Участник оспаривает карточку
     SYSTEM_CARDS_APPEAL = 'cards-appeal'                # 6 Модератор апрувит/отклоняет оспаривание
-    SYSTEM_CARDS_DEACTIVATE = 'cards-deactivate'
 
     SYSTEM_API = 'api'
     SYSTEM_LEADER = 'leader'
@@ -118,7 +103,6 @@ class Status(models.Model):
         (SYSTEM_CARDS_ASSISTANT, _('Cards-assistant')),
         (SYSTEM_CARDS_CONSIDERATION, _('Cards-consideration')),
         (SYSTEM_CARDS_APPEAL, _('Cards-appeal')),
-        (SYSTEM_CARDS_DEACTIVATE, _('Cards-deactivate')),
 
         (SYSTEM_API, _('Api')),
         (SYSTEM_LEADER, _('Leader')),
