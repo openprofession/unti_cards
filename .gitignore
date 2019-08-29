@@ -3,7 +3,7 @@
 *.pyc
 */__pycache__
 
-_jen
+_dev
 
 db.sqlite3
 
