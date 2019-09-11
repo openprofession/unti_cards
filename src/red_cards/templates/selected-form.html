@@ -119,7 +119,9 @@
         {{ form.leader_id }}
 
       <div class="form-button-group">
-        <div class="form-button-group__item"><a class="btn btn-outline-primary" href="selection-page.html">Отмена</a></div>
+        <div class="form-button-group__item">
+            <a class="btn btn-outline-primary" href="{% url 'user-cards' %}?user=L{{ target_user.leader_id }}">Отмена</a>
+        </div>
         <div class="form-button-group__item">
           <button class="btn btn-primary" type="submit">Выдать карточку</button>
         </div>

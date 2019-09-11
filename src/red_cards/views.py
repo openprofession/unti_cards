@@ -15,6 +15,8 @@ from django.http import Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect
+from django.template.defaultfilters import filesizeformat
+from django.utils.translation import ugettext_lazy as _
 
 from django.views.generic import FormView, TemplateView
 
@@ -333,6 +335,9 @@ def api_test2(request):
 
 # ############################################################################ #
 
+MAX_UPLOAD_SIZE = 1024*1024*50
+
+
 class BaseAppealsView(
     LoginRequiredMixin,
     TemplateView,
@@ -352,6 +357,8 @@ class AppealForm(forms.Form):
             'placeholder': _('Опишите, что произошло и почему вы не согласны...'),
         }),
         required=False,
+        min_length=2,
+        max_length=1000,
     )
 
     tag = forms.ModelChoiceField(
@@ -369,7 +376,7 @@ class AppealForm(forms.Form):
         label=_('Выберите файл'),
         label_suffix='',
         widget=forms.FileInput(),
-        required=False
+        required=False,
     )
     card = forms.CharField(
         widget=forms.HiddenInput,
@@ -389,6 +396,23 @@ class AppealForm(forms.Form):
         )
         return new_appeal
 
+    def clean(self):
+        if 'file' in self.cleaned_data:
+            file = self.cleaned_data['file']
+            # content_type = content.content_type.split('/')[0]
+            # if content_type not in settings.CONTENT_TYPES:
+            #     raise forms.ValidationError(_('File type is not supported'))
+            #
+            if file:
+                if file.size > MAX_UPLOAD_SIZE:
+                    raise forms.ValidationError(_(
+                        'Максимальный размер файла %s. Текущий размер файла %s'
+                    ) % (
+                        filesizeformat(MAX_UPLOAD_SIZE),
+                        filesizeformat(file.size)
+                    ))
+        #   #   #
+        return super(AppealForm, self).clean()
 
 class ArgsAppealsFormView(forms.Form):
     # user = forms.ChoiceField(required=True)
@@ -778,8 +802,6 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
 
         form_name = self.request.POST.get('form_name')
         if form_name == 'comment':
-            context = self.get_context_data(**kwargs)
-            appeal = context['appeal']
             # if appeal.status not in (
             #         appeal.STATUS_NEW,
             #         appeal.STATUS_IN_WORK,
@@ -790,13 +812,15 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
                 data=self.request.POST,
                 files=self.request.FILES,
             )
+            setattr(self, '_comment_form', comment_form)
+            context = self.get_context_data(**kwargs)
+            appeal = context['appeal']
             if comment_form.is_valid():
                 comment_form.save(request.user, appeal)
                 return redirect(request.get_full_path())
-            else:
-                setattr(self, '_comment_form', comment_form)
             #
-            return redirect(request.get_full_path())
+            # return redirect(request.get_full_path())
+            return self.get(request, *args, **kwargs)
         #   #
 
         # ------------------------------------------------------------ #
@@ -847,18 +871,20 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
 
 class AppealCommentForm(forms.Form):
     text = forms.CharField(
-        label=_('Введите комментарий'),
+        label=_('Описание'),
         label_suffix='',
         widget=forms.Textarea(attrs={
             'placeholder': _('Опишите, что произошло...'),
         }),
+        min_length=1,
+        max_length=1000,
     )
 
     file = forms.FileField(
         label=_('Выберите файл'),
         label_suffix='',
         widget=forms.FileInput(),
-        required=False
+        required=False,
     )
 
     def save(self, user, appeal):
@@ -870,6 +896,23 @@ class AppealCommentForm(forms.Form):
         )
         return comment
 
+    def clean(self):
+        if 'file' in self.cleaned_data:
+            file = self.cleaned_data['file']
+            # content_type = content.content_type.split('/')[0]
+            # if content_type not in settings.CONTENT_TYPES:
+            #     raise forms.ValidationError(_('File type is not supported'))
+            #
+            if file:
+                if file.size > MAX_UPLOAD_SIZE:
+                    raise forms.ValidationError(_(
+                        'Максимальный размер файла %s. Текущий размер файла %s'
+                    ) % (
+                        filesizeformat(MAX_UPLOAD_SIZE),
+                        filesizeformat(file.size)
+                    ))
+        #   #   #
+        return super(AppealCommentForm, self).clean()
 # ############################################################################ #
 
 

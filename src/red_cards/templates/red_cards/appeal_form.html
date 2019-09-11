@@ -55,12 +55,42 @@
         </div>
       </div>
     </div>
+<script type="text/javascript">
+function AlertFilesize(){
+    if(window.ActiveXObject){
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var filepath = document.getElementById('fileInput').value;
+        var thefile = fso.getFile(filepath);
+        var sizeinbytes = thefile.size;
+    }else{
+        var sizeinbytes = document.getElementById('fileInput').files[0].size;
+    }
 
+    var fSExt = new Array('Bytes', 'KB', 'MB', 'GB');
+    var fSize = sizeinbytes;
+    i=0;
+    while(fSize>900){
+        fSize/=1024;
+        i++;
+    }
+
+    {#console.log(sizeinbytes)#}
+    if( sizeinbytes >= 1024*1024*50){
+        alert(
+            "Выбранный файл слишком большой " +
+            (Math.round(fSize*100)/100)+' '+fSExt[i] +
+                ",\n максимальный размер 50мб"
+        );
+        document.getElementById('fileInput').value = "";
+    }
+}
+</script>
     <form  enctype="multipart/form-data" class="form-event" action="" method="POST">
         {% csrf_token %}
 
       <div class="form-group">
           {{ form.description|attr:"class:form-control form-textarea"  }}
+          <span style="color: grey;">*не более 1000 символов</span>
       </div>
 
       <div class="form-group row">
@@ -76,7 +106,7 @@
 
       <div class="form-group">
         <div class="custom-file">
-          {{ form.file|attr:"class:custom-file-input" }}
+          {{ form.file|attr:"class:custom-file-input"|attr:"id:fileInput"|attr:"onchange:AlertFilesize();" }}
 
           {{ form.file|add_label_class:"custom-file-label" }}
 
@@ -87,6 +117,24 @@
       </div>
         {{ form.card }}
     </form>
+<div>
+
+{% if form.errors %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ field.label_tag }}: {{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+</div>
 
 
   </div>
