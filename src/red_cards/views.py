@@ -347,7 +347,7 @@ def api_test_all(request):
     upl1 = UploadsApi().get_attendance()
     upl2 = UploadsApi().check_user_trace(event_id='cd602dd7-4fef-440b-82bf-013b5817e3dd')
 
-    test['upl_attendance'] = {'system': 'UPLOADS', 'method': 'upl_attendance', 'datetime': now, 'status': 'OK', 'result': upl1['count']}
+    #test['upl_attendance'] = {'system': 'UPLOADS', 'method': 'upl_attendance', 'datetime': now, 'status': 'OK', 'result': upl1['count']}
     test['upl_user_trace'] = {'system': 'UPLOADS', 'method': 'upl_user_trace', 'datetime': now, 'status': 'OK', 'result': len(upl2)}
     # print(upl1['count'])
     # print(upl2)
