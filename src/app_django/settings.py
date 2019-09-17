@@ -27,7 +27,7 @@ print('The .env file has been loaded. See base.py for more information')
 SECRET_KEY = 'cgju4#-d_ewl!vt$t=!hh+0!jpqk+teyo$kwl1v(6$boob2st='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*', ]
 
@@ -202,10 +202,21 @@ ASSISTANT_TAGS_NAME = ['assistant', 'island_assistant']
 # интеграция по API с другими приложениями
 CONNECTION_TIMEOUT = 5000
 
-XLE_URL = 'https://xle.u2035test.ru'
-XLE_TOKEN = 'd1veitls2akofd5q'
+XLE_URL = env("XLE_URL")#'https://xle.u2035test.ru'
+XLE_TOKEN = env("XLE_TOKEN")#'d1veitls2akofd5q'
+XLE_CONTEXT = env("XLE_CONTEXT")#'island1022-demo'
 
-XLE_CONTEXT = 'island1022-demo'
+LABS_URL = env("LABS_URL")
+LABS_TOKEN = env("LABS_TOKEN")
+
+NOW_URL = env("NOW_URL")
+NOW_TOKEN = env("NOW_TOKEN")
+
+ATTENDANCE_URL = env("ATTENDANCE_URL")
+ATTENDANCE_TOKEN = env("ATTENDANCE_TOKEN")#'89ef768657b74893ca9ebaf10ebcd51297376c4c'
+
+UPLOADS_URL = env("UPLOADS_URL")
+UPLOADS_TOKEN = env("UPLOADS_TOKEN")
 
 from django.urls import reverse_lazy
 

@@ -33,42 +33,42 @@ if settings.DEBUG:
 #
 
 urlpatterns += [
-                  path('', include('social_django.urls', namespace='social')),
-                  path('help/', views.HelpView.as_view(), name='help'),
-                  path('logout/', views.logout, name='logout'),
-                  path('admin/', admin.site.urls),
-                  path('api-auth/', include('rest_framework.urls')),
-                  path('api-docs/', include_docs_urls(title='DRF: API-docs')),
-                  path('api/', include(router.urls)),
-                  path('manage/load_events/<date_txt>', views.api_test),
-                  path('manage/load_enrolls', views.api_test2),
-                  path('', views.home, name='home'),
-                  path(
-                      'card/add/<str:leader_id>',
-                      views.AddCardAdminFormView.as_view(),
-                      name='card-add'
-                  ),
-                  path('appeals/add',
-                       views.AppealsFormView.as_view(),
-                       name='appeals-add'),
-                  path('appeals/add/success',
-                       views.SuccessAppealsFormView.as_view(),
-                       name='appeals-add-success'),
-                  path('appeals',
-                       views.AppealListView.as_view(),
-                       name='appeals-list'),
-                  path('appeals/<str:pk>',
-                       views.AppealDetailAdminView.as_view(),
-                       name='appeals-detail-admin'),
+                   path('', include('social_django.urls', namespace='social')),
+                   path('help/', views.HelpView.as_view(), name='help'),
+                   path('logout/', views.logout, name='logout'),
+                   path('admin/', admin.site.urls),
+                   path('api-auth/', include('rest_framework.urls')),
+                   path('api-docs/', include_docs_urls(title='DRF: API-docs')),
+                   path('api/', include(router.urls)),
+                   path('manage/load_events/<date_txt>', views.api_test),
+                   path('manage/load_enrolls', views.api_test2),
+                   path('manage/test_api', views.api_test_all),
+                   path('', views.home, name='home'),
+                   path(
+                       'card/add/<str:leader_id>',
+                       views.AddCardAdminFormView.as_view(),
+                       name='card-add'
+                   ),
+                   path('appeals/add',
+                        views.AppealsFormView.as_view(),
+                        name='appeals-add'),
+                   path('appeals/add/success',
+                        views.SuccessAppealsFormView.as_view(),
+                        name='appeals-add-success'),
+                   path('appeals',
+                        views.AppealListView.as_view(),
+                        name='appeals-list'),
+                   path('appeals/<str:pk>',
+                        views.AppealDetailAdminView.as_view(),
+                        name='appeals-detail-admin'),
 
-                  path('users/search',
-                       views.SearchView.as_view(),
-                       name='users-search'),
+                   path('users/search',
+                        views.SearchView.as_view(),
+                        name='users-search'),
 
-                  path('user/cards',
-                       views.SearchUserCardsView.as_view(),
-                       name='user-cards'),
+                   path('user/cards',
+                        views.SearchUserCardsView.as_view(),
+                        name='user-cards'),
 
-
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
-              static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + \
+               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

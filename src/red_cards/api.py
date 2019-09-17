@@ -97,7 +97,7 @@ class XLEApi(BaseApi):
     authorization = {'params': {'app_token': getattr(settings, 'XLE_TOKEN', '')}}
 
     def get_attendance(self):
-        return self.make_request('/api/v1/checkin')
+        return self.make_request_no_pagination('/api/v1/checkin')
 
     def get_timetable(self, date):
         return self.make_request_no_pagination(
@@ -105,3 +105,52 @@ class XLEApi(BaseApi):
 
     def get_enrolls(self, event_uuid):
         return self.make_request_no_pagination('/api/v1/timetable?&event_uuid={}'.format(event_uuid))
+
+
+class LABSApi(BaseApi):
+    name = 'labs'
+    base_url = settings.LABS_URL.rstrip('/')
+    authorization = {'params': {'app_token': getattr(settings, 'LABS_TOKEN', '')}}
+    verify = False
+
+    def get_activities(self, date_min=None, date_max=None):
+        params = {}
+        if date_min:
+            params['date_min'] = date_min
+        if date_max:
+            params['date_max'] = date_max
+        return self.make_request_no_pagination('/api/v2/activity', params=params)
+
+    def get_types(self):
+        return self.make_request_no_pagination('/api/v2/type')
+
+    def get_contexts(self):
+        return self.make_request_no_pagination('/api/v2/context')
+
+
+class UploadsApi(BaseApi):
+    name = 'uploads'
+    base_url = settings.UPLOADS_URL.rstrip('/')
+    authorization = {'headers': {'x-api-key': getattr(settings, 'UPLOADS_TOKEN', '')}}
+
+    def get_all_user_result(self):
+        params = {}
+        return self.make_request_no_pagination('/api/all-team-results/', params=params)
+
+    def get_attendance(self):
+        return self.make_request_no_pagination('/api/attendance/')
+
+    def check_user_trace(self, event_id):
+        params = {}
+        params['event_id'] = event_id
+        return self.make_request_no_pagination('/api/check-user-trace/', params=params)
+
+
+class AttendanceApi(BaseApi):
+    name = 'attendance'
+    base_url = settings.ATTENDANCE_URL
+    authorization = {'headers': {'Authorization': 'Token {}'.format(getattr(settings, 'ATTENDANCE_TOKEN', ''))}}
+
+    def get_attendance_event(self, event_id):
+        params = {}
+        return self.make_request_no_pagination('/api/v0/attendance/event/{}/'.format(event_id), params=params)

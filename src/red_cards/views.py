@@ -1,8 +1,12 @@
+import datetime
+
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.utils.timezone import now
 
 from app_django.settings import LOGOUT_REDIRECT
+from red_cards.api import XLEApi, UploadsApi, AttendanceApi
 from red_cards.models import Event
 from red_cards.utils import update_events_data, update_enrolls_data
 from django.utils.translation import ugettext_lazy as _
@@ -129,7 +133,7 @@ def home(request):
     # ------------------------------------------------------------------------ #
     eliminated_cards = models.Card.objects.filter(
         last_status=models.Status.NAME_ELIMINATED,
-        leader_id=request.user.leader_id
+        leader_id=request.user.leader_id or None
     )
     # ------------------------------------------------------------------------ #
     return render(request, template_name="home.html", context=dict(
@@ -248,7 +252,6 @@ class RolePermissionMixin(PermissionRequiredMixin):
 
 
 class AddCardAdminFormView(RolePermissionMixin, LoginRequiredMixin, FormView):
-
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
@@ -329,6 +332,27 @@ def api_test2(request):
     for event in all_events:
         update_enrolls_data(event_uuid=event.uuid)
     return HttpResponse("OK!")
+
+
+def api_test_all(request):
+    test = {}
+    xle1 = XLEApi().get_attendance()
+    xle2 = XLEApi().get_timetable(date=datetime.date(2019, 7, 12))
+    xle3 = XLEApi().get_enrolls(event_uuid='edc82d79-d6d1-4d07-81cc-6d426e6845fa')
+    test['xle_timetable'] = {'system': 'XLE', 'method': 'xle_timetable', 'datetime': now, 'status': 'OK', 'result': len(xle2)}
+    test['xle_enrolls'] = {'system': 'XLE', 'method': 'xle_enrolls', 'datetime': now, 'status': 'OK', 'result': len(xle3)}
+    upl1 = UploadsApi().get_attendance()
+    upl2 = UploadsApi().check_user_trace(event_id='cd602dd7-4fef-440b-82bf-013b5817e3dd')
+
+    test['upl_attendance'] = {'system': 'UPLOADS', 'method': 'upl_attendance', 'datetime': now, 'status': 'OK', 'result': upl1['count']}
+    test['upl_user_trace'] = {'system': 'UPLOADS', 'method': 'upl_user_trace', 'datetime': now, 'status': 'OK', 'result': len(upl2)}
+    # print(upl1['count'])
+    # print(upl2)
+
+    att1 = AttendanceApi().get_attendance_event('4f46d075-f56b-4e84-b4e6-2e1be0a9bdf7')
+    test['att_attendance_event'] = {'system': 'ATTENDANCE', 'method': 'att_attendance_event', 'datetime': now, 'status': 'OK', 'result': len(att1)}
+
+    return render(request, template_name='test_api.html', context={'test': test})
 
 
 # ############################################################################ #
@@ -468,6 +492,7 @@ class ExecutiveMixin:
         для модераторов
         взять аппеляцию на рассмотрение
     """
+
     def handle_executive(self, request, *args, **kwargs):
         appeal_id = self.request.POST.get('appeal')
         appeal = models.Appeal.objects.filter(pk=appeal_id).first()
@@ -509,7 +534,6 @@ class ExecutiveMixin:
 
 
 class AppealListFilterForm(forms.Form):
-
     # По статусу: Не просмотрено, На рассмотрении, Принято, Отказ
     status = forms.ChoiceField(
         label=_('Выберите статус апеляции'),
@@ -519,10 +543,10 @@ class AppealListFilterForm(forms.Form):
         }),
         # AppealListFilterForm(initial={'status': models.Appeal.STATUS_NEW})
         choices=(
-            (models.Appeal.STATUS_NEW,          _('Не просмотрено')),
-            (models.Appeal.STATUS_IN_WORK,      _('На рассмотрении')),
-            (models.Appeal.STATUS_APPROVED,     _('Принято')),
-            (models.Appeal.STATUS_REJECTED,     _('Отказ')),
+            (models.Appeal.STATUS_NEW, _('Не просмотрено')),
+            (models.Appeal.STATUS_IN_WORK, _('На рассмотрении')),
+            (models.Appeal.STATUS_APPROVED, _('Принято')),
+            (models.Appeal.STATUS_REJECTED, _('Отказ')),
             ('all', _('все')),
         ),
         # initial=models.Appeal.STATUS_NEW,
@@ -536,9 +560,9 @@ class AppealListFilterForm(forms.Form):
             'title': _('По сообщениям'),
         }),
         choices=(
-            ('only_new',            _('есть новые сообщения')),
-            ('has_comments',        _('есть сообщения')),
-            ('no_comments',         _('без сообщений')),
+            ('only_new', _('есть новые сообщения')),
+            ('has_comments', _('есть сообщения')),
+            ('no_comments', _('без сообщений')),
             ('all', _('все')),
         ),
         required=False,
@@ -589,15 +613,15 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         #       C новыми сообщениями
 
         appeals_stats = {
-            'new':          appeals.filter(status=models.Appeal.STATUS_NEW).count(),
-            'in_work':      appeals.filter(status=models.Appeal.STATUS_IN_WORK).count(),
-            'approved':     appeals.filter(status=models.Appeal.STATUS_APPROVED).count(),
-            'rejected':     appeals.filter(status=models.Appeal.STATUS_REJECTED).count(),
-            'has_new_messages':     appeals.filter(
-                    id__in=models.AppealComment.objects.exclude(
-                        seen_by_users=self.request.user
-                    ).values('appeal')
-                ).count(),
+            'new': appeals.filter(status=models.Appeal.STATUS_NEW).count(),
+            'in_work': appeals.filter(status=models.Appeal.STATUS_IN_WORK).count(),
+            'approved': appeals.filter(status=models.Appeal.STATUS_APPROVED).count(),
+            'rejected': appeals.filter(status=models.Appeal.STATUS_REJECTED).count(),
+            'has_new_messages': appeals.filter(
+                id__in=models.AppealComment.objects.exclude(
+                    seen_by_users=self.request.user
+                ).values('appeal')
+            ).count(),
         }
 
         # status = STATUS_NEW by default
@@ -648,11 +672,11 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         #
 
         context.update({
-            'selected_user':          selected_user,
-            'all_users':          all_users,
-            'appeals':          appeals,
-            'filters_form':     filters_form,
-            'appeals_stats':    appeals_stats,
+            'selected_user': selected_user,
+            'all_users': all_users,
+            'appeals': appeals,
+            'filters_form': filters_form,
+            'appeals_stats': appeals_stats,
         })
         return context
 
@@ -761,12 +785,12 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
                 comment.seen_by_users.add(self.request.user)
         #   #
         context.update({
-            'card':             appeal.card,
-            'appeal':           appeal,
-            'comment_form':     comment_form,
-            'comments':         comments,
+            'card': appeal.card,
+            'appeal': appeal,
+            'comment_form': comment_form,
+            'comments': comments,
 
-            'appeal_tag_form':  appeal_tag_form,
+            'appeal_tag_form': appeal_tag_form,
         })
         return context
 
@@ -870,6 +894,7 @@ class AppealCommentForm(forms.Form):
         )
         return comment
 
+
 # ############################################################################ #
 
 
@@ -908,8 +933,8 @@ class SearchView(RolePermissionMixin, TemplateView):
         # #
 
         context.update({
-            'all_users':        all_users,
-            'selected_users':   selected_users,
+            'all_users': all_users,
+            'selected_users': selected_users,
             # 'by_search':        by_search,
         })
         return context
@@ -935,12 +960,12 @@ class SearchUserCardsFilterForm(forms.Form):
             'title': _('По статусу'),
         }),
         choices=(
-            (STATUS_ACTIVE,                     _('Активные')),
-            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
-            (models.Status.NAME_PUBLISHED,      _('Можно оспорить')),
-            (models.Status.NAME_ISSUED,         _('Выдана')),
-            (models.Status.NAME_CONSIDERATION,  _('Оспорена - на рассмотрении')),
-            (STATUS_ALL,                        _('Показать все')),
+            (STATUS_ACTIVE, _('Активные')),
+            (models.Status.NAME_ELIMINATED, _('Деактивирована')),
+            (models.Status.NAME_PUBLISHED, _('Можно оспорить')),
+            (models.Status.NAME_ISSUED, _('Выдана')),
+            (models.Status.NAME_CONSIDERATION, _('Оспорена - на рассмотрении')),
+            (STATUS_ALL, _('Показать все')),
         ),
         required=False,
     )
@@ -951,7 +976,7 @@ class SearchUserCardsFilterForm(forms.Form):
         }),
         choices=(
             *models.Card.TYPE_CHOICES,
-            (STATUS_ALL,                        _('Показать все')),
+            (STATUS_ALL, _('Показать все')),
         ),
         required=False,
         # initial=models.Card.TYPE_RED,
@@ -1042,11 +1067,11 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
         #   #   #
 
         context.update({
-            'all_users':        all_users,
-            'selected_user':   selected_user,
+            'all_users': all_users,
+            'selected_user': selected_user,
 
-            'cards':   cards,
-            'filters_form':   filters_form,
+            'cards': cards,
+            'filters_form': filters_form,
         })
         return context
 
@@ -1069,4 +1094,3 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
             card.reason
         ))
         return redirect(request.get_full_path())
-

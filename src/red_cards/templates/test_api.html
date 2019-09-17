@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block header %}
+    {% include 'header.html' %}
+{% endblock %}
+
+{% block content %}
+    <h1> Тестирование API </h1>
+    <br>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Подсистема</th>
+            <th>Метод</th>
+            <th>Статус</th>
+            <th>Результат</th>
+            <th>Время</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, value in test.items %}
+            <tr>
+                <td>{{ value.system }}</td>
+                <td>{{ value.method }}</td>
+                <td>{{ value.status }}</td>
+                <td>{{ value.result }}</td>
+                <td>{{ value.datetime }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
