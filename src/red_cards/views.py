@@ -19,6 +19,8 @@ from django.http import Http404, HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect
+from django.template.defaultfilters import filesizeformat
+from django.utils.translation import ugettext_lazy as _
 
 from django.views.generic import FormView, TemplateView
 
@@ -252,6 +254,7 @@ class RolePermissionMixin(PermissionRequiredMixin):
 
 
 class AddCardAdminFormView(RolePermissionMixin, LoginRequiredMixin, FormView):
+
     template_name = 'selected-form.html'
     form_class = AddCardForm
 
@@ -376,6 +379,8 @@ class AppealForm(forms.Form):
             'placeholder': _('Опишите, что произошло и почему вы не согласны...'),
         }),
         required=False,
+        min_length=2,
+        max_length=1000,
     )
 
     tag = forms.ModelChoiceField(
@@ -393,7 +398,7 @@ class AppealForm(forms.Form):
         label=_('Выберите файл'),
         label_suffix='',
         widget=forms.FileInput(),
-        required=False
+        required=False,
     )
     card = forms.CharField(
         widget=forms.HiddenInput,
@@ -413,6 +418,23 @@ class AppealForm(forms.Form):
         )
         return new_appeal
 
+    def clean(self):
+        if 'file' in self.cleaned_data:
+            file = self.cleaned_data['file']
+            # content_type = content.content_type.split('/')[0]
+            # if content_type not in settings.CONTENT_TYPES:
+            #     raise forms.ValidationError(_('File type is not supported'))
+            #
+            if file:
+                if file.size > MAX_UPLOAD_SIZE:
+                    raise forms.ValidationError(_(
+                        'Максимальный размер файла %s. Текущий размер файла %s'
+                    ) % (
+                        filesizeformat(MAX_UPLOAD_SIZE),
+                        filesizeformat(file.size)
+                    ))
+        #   #   #
+        return super(AppealForm, self).clean()
 
 class ArgsAppealsFormView(forms.Form):
     # user = forms.ChoiceField(required=True)
@@ -492,7 +514,6 @@ class ExecutiveMixin:
         для модераторов
         взять аппеляцию на рассмотрение
     """
-
     def handle_executive(self, request, *args, **kwargs):
         appeal_id = self.request.POST.get('appeal')
         appeal = models.Appeal.objects.filter(pk=appeal_id).first()
@@ -534,6 +555,7 @@ class ExecutiveMixin:
 
 
 class AppealListFilterForm(forms.Form):
+
     # По статусу: Не просмотрено, На рассмотрении, Принято, Отказ
     status = forms.ChoiceField(
         label=_('Выберите статус апеляции'),
@@ -543,10 +565,10 @@ class AppealListFilterForm(forms.Form):
         }),
         # AppealListFilterForm(initial={'status': models.Appeal.STATUS_NEW})
         choices=(
-            (models.Appeal.STATUS_NEW, _('Не просмотрено')),
-            (models.Appeal.STATUS_IN_WORK, _('На рассмотрении')),
-            (models.Appeal.STATUS_APPROVED, _('Принято')),
-            (models.Appeal.STATUS_REJECTED, _('Отказ')),
+            (models.Appeal.STATUS_NEW,          _('Не просмотрено')),
+            (models.Appeal.STATUS_IN_WORK,      _('На рассмотрении')),
+            (models.Appeal.STATUS_APPROVED,     _('Принято')),
+            (models.Appeal.STATUS_REJECTED,     _('Отказ')),
             ('all', _('все')),
         ),
         # initial=models.Appeal.STATUS_NEW,
@@ -560,9 +582,9 @@ class AppealListFilterForm(forms.Form):
             'title': _('По сообщениям'),
         }),
         choices=(
-            ('only_new', _('есть новые сообщения')),
-            ('has_comments', _('есть сообщения')),
-            ('no_comments', _('без сообщений')),
+            ('only_new',            _('есть новые сообщения')),
+            ('has_comments',        _('есть сообщения')),
+            ('no_comments',         _('без сообщений')),
             ('all', _('все')),
         ),
         required=False,
@@ -613,15 +635,15 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         #       C новыми сообщениями
 
         appeals_stats = {
-            'new': appeals.filter(status=models.Appeal.STATUS_NEW).count(),
-            'in_work': appeals.filter(status=models.Appeal.STATUS_IN_WORK).count(),
-            'approved': appeals.filter(status=models.Appeal.STATUS_APPROVED).count(),
-            'rejected': appeals.filter(status=models.Appeal.STATUS_REJECTED).count(),
-            'has_new_messages': appeals.filter(
-                id__in=models.AppealComment.objects.exclude(
-                    seen_by_users=self.request.user
-                ).values('appeal')
-            ).count(),
+            'new':          appeals.filter(status=models.Appeal.STATUS_NEW).count(),
+            'in_work':      appeals.filter(status=models.Appeal.STATUS_IN_WORK).count(),
+            'approved':     appeals.filter(status=models.Appeal.STATUS_APPROVED).count(),
+            'rejected':     appeals.filter(status=models.Appeal.STATUS_REJECTED).count(),
+            'has_new_messages':     appeals.filter(
+                    id__in=models.AppealComment.objects.exclude(
+                        seen_by_users=self.request.user
+                    ).values('appeal')
+                ).count(),
         }
 
         # status = STATUS_NEW by default
@@ -672,11 +694,11 @@ class AppealListView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView):
         #
 
         context.update({
-            'selected_user': selected_user,
-            'all_users': all_users,
-            'appeals': appeals,
-            'filters_form': filters_form,
-            'appeals_stats': appeals_stats,
+            'selected_user':          selected_user,
+            'all_users':          all_users,
+            'appeals':          appeals,
+            'filters_form':     filters_form,
+            'appeals_stats':    appeals_stats,
         })
         return context
 
@@ -785,12 +807,12 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
                 comment.seen_by_users.add(self.request.user)
         #   #
         context.update({
-            'card': appeal.card,
-            'appeal': appeal,
-            'comment_form': comment_form,
-            'comments': comments,
+            'card':             appeal.card,
+            'appeal':           appeal,
+            'comment_form':     comment_form,
+            'comments':         comments,
 
-            'appeal_tag_form': appeal_tag_form,
+            'appeal_tag_form':  appeal_tag_form,
         })
         return context
 
@@ -802,8 +824,6 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
 
         form_name = self.request.POST.get('form_name')
         if form_name == 'comment':
-            context = self.get_context_data(**kwargs)
-            appeal = context['appeal']
             # if appeal.status not in (
             #         appeal.STATUS_NEW,
             #         appeal.STATUS_IN_WORK,
@@ -814,13 +834,15 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
                 data=self.request.POST,
                 files=self.request.FILES,
             )
+            setattr(self, '_comment_form', comment_form)
+            context = self.get_context_data(**kwargs)
+            appeal = context['appeal']
             if comment_form.is_valid():
                 comment_form.save(request.user, appeal)
                 return redirect(request.get_full_path())
-            else:
-                setattr(self, '_comment_form', comment_form)
             #
-            return redirect(request.get_full_path())
+            # return redirect(request.get_full_path())
+            return self.get(request, *args, **kwargs)
         #   #
 
         # ------------------------------------------------------------ #
@@ -871,18 +893,20 @@ class AppealDetailAdminView(RolePermissionMixin, ExecutiveMixin, BaseAppealsView
 
 class AppealCommentForm(forms.Form):
     text = forms.CharField(
-        label=_('Введите комментарий'),
+        label=_('Описание'),
         label_suffix='',
         widget=forms.Textarea(attrs={
             'placeholder': _('Опишите, что произошло...'),
         }),
+        min_length=1,
+        max_length=1000,
     )
 
     file = forms.FileField(
         label=_('Выберите файл'),
         label_suffix='',
         widget=forms.FileInput(),
-        required=False
+        required=False,
     )
 
     def save(self, user, appeal):
@@ -894,7 +918,23 @@ class AppealCommentForm(forms.Form):
         )
         return comment
 
-
+    def clean(self):
+        if 'file' in self.cleaned_data:
+            file = self.cleaned_data['file']
+            # content_type = content.content_type.split('/')[0]
+            # if content_type not in settings.CONTENT_TYPES:
+            #     raise forms.ValidationError(_('File type is not supported'))
+            #
+            if file:
+                if file.size > MAX_UPLOAD_SIZE:
+                    raise forms.ValidationError(_(
+                        'Максимальный размер файла %s. Текущий размер файла %s'
+                    ) % (
+                        filesizeformat(MAX_UPLOAD_SIZE),
+                        filesizeformat(file.size)
+                    ))
+        #   #   #
+        return super(AppealCommentForm, self).clean()
 # ############################################################################ #
 
 
@@ -933,8 +973,8 @@ class SearchView(RolePermissionMixin, TemplateView):
         # #
 
         context.update({
-            'all_users': all_users,
-            'selected_users': selected_users,
+            'all_users':        all_users,
+            'selected_users':   selected_users,
             # 'by_search':        by_search,
         })
         return context
@@ -960,12 +1000,12 @@ class SearchUserCardsFilterForm(forms.Form):
             'title': _('По статусу'),
         }),
         choices=(
-            (STATUS_ACTIVE, _('Активные')),
-            (models.Status.NAME_ELIMINATED, _('Деактивирована')),
-            (models.Status.NAME_PUBLISHED, _('Можно оспорить')),
-            (models.Status.NAME_ISSUED, _('Выдана')),
-            (models.Status.NAME_CONSIDERATION, _('Оспорена - на рассмотрении')),
-            (STATUS_ALL, _('Показать все')),
+            (STATUS_ACTIVE,                     _('Активные')),
+            (models.Status.NAME_ELIMINATED,     _('Деактивирована')),
+            (models.Status.NAME_PUBLISHED,      _('Можно оспорить')),
+            (models.Status.NAME_ISSUED,         _('Выдана')),
+            (models.Status.NAME_CONSIDERATION,  _('Оспорена - на рассмотрении')),
+            (STATUS_ALL,                        _('Показать все')),
         ),
         required=False,
     )
@@ -976,7 +1016,7 @@ class SearchUserCardsFilterForm(forms.Form):
         }),
         choices=(
             *models.Card.TYPE_CHOICES,
-            (STATUS_ALL, _('Показать все')),
+            (STATUS_ALL,                        _('Показать все')),
         ),
         required=False,
         # initial=models.Card.TYPE_RED,
@@ -1067,11 +1107,11 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
         #   #   #
 
         context.update({
-            'all_users': all_users,
-            'selected_user': selected_user,
+            'all_users':        all_users,
+            'selected_user':   selected_user,
 
-            'cards': cards,
-            'filters_form': filters_form,
+            'cards':   cards,
+            'filters_form':   filters_form,
         })
         return context
 
@@ -1094,3 +1134,4 @@ class SearchUserCardsView(RolePermissionMixin, TemplateView):
             card.reason
         ))
         return redirect(request.get_full_path())
+

@@ -20,12 +20,35 @@
     {% block page_css %}
 
     {% endblock %}
+    <style>
+        footer {
+  background: #fff;
+  bottom: 0;
+  color: #777;
+  left: 0;
+  margin-top: 25px;
+  padding: 25px 0;
+  position: absolute;
+  right: 0;
+}
+footer a {
+  color: #777;
+}
+footer a:hover {
+  color: #e52127;
+  text-decoration: underline;
+}
+footer .footer-version {
+  display: none;
+}
+    </style>
 </head>
 <body>
 <div class="wrapper">
     {% block header %}
         {% include 'header.html' %}
     {% endblock %}
+
 
 <main class="content">
   <section class="section-page">
@@ -63,7 +86,23 @@
     </div>
     </section>
   </main>
-  <footer class="footer-main"></footer>
+{#  <footer class="footer-main"></footer>#}
+<footer class="mt-4">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-3 footer-copyright">
+								© 2018-2019
+									<a href="http://2035.university" title=""></a>
+							</div>
+			<div class="col-sm-6 footer-links text-center">
+															<a class="text-nowrap ml-2 mr-2" href="http://2035.university" title="Университет НТИ&nbsp;«20.35»&nbsp;">Университет НТИ&nbsp;«20.35»&nbsp;</a>
+												</div>
+							<div class="col-sm-3 footer-version text-right">
+					Версия 1.15.1
+				</div>
+					</div>
+	</div>
+</footer>
 </div>
 <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>

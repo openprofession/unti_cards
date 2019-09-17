@@ -10,8 +10,9 @@ class CustomSocialAuthMiddleware(SocialAuthExceptionMiddleware):
     def process_exception(self, request, exception):
         if isinstance(exception, AuthCanceled):
             messages.add_message(request, messages.ERROR, _('Вы отказались от авторизации'))
-            url = reverse('login')
-            if request.session.get('next'):
-                url = '{}?next={}'.format(url, request.session.get('next'))
-            return redirect(url)
+            # url = reverse('login')
+            # if request.session.get('next'):
+            #     url = '{}?next={}'.format(url, request.session.get('next'))
+            # return redirect(url)
+            return redirect(reverse('help'))
         return super().process_exception(request, exception)

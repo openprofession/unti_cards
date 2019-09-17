@@ -453,6 +453,7 @@ class Appeal(models.Model):
     description = models.TextField(
         verbose_name=_('Description'),
         null=False, blank=False,
+        max_length=1000,
     )
     file = models.FileField(
         verbose_name=_('file'),
@@ -642,6 +643,7 @@ class AppealComment(models.Model):
     text = models.TextField(
         verbose_name=_('Description'),
         null=False, blank=False,
+        max_length=1000,
     )
     file = models.FileField(
         verbose_name=_('file'),
